@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     yearEl.textContent = new Date().getFullYear().toString();
   }
 
-  fetch('/api/demos')
+  fetch('/demos.json')
     .then(res => res.json())
     .then(data => {
       const demos = Array.isArray(data.demos) ? data.demos : [];
