@@ -1,0 +1,25 @@
+{
+  "name": "logivex-quote-form",
+  "version": "1.0.0",
+  "description": "Simple transport quote form that forwards data to a Make.com webhook.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "keywords": [
+    "transport",
+    "quote",
+    "make.com",
+    "webhook"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.21.2",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7"
+  }
+}
