@@ -18,7 +18,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/demos', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'demo-hub.html'));
+  res.redirect('/');
+});
+
+app.get('/quote-demo', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'quote-demo', 'index.html'));
 });
 
 app.get('/api/demos', (req, res) => {

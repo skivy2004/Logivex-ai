@@ -3,281 +3,111 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Logivex – Instant Transport Quotes</title>
-    <link rel="stylesheet" href="styles.css" />
+    <title>Logivex – AI Automation for Logistics</title>
+    <link rel="stylesheet" href="demo-hub.css" />
   </head>
   <body>
-    <header class="site-header">
-      <div class="container header-inner">
-        <div class="logo-mark">Lx</div>
-        <div class="logo-text">Logivex</div>
-        <nav class="nav-links">
-          <a href="#how-it-works" data-i18n="nav.how">How it works</a>
-          <a href="#trust" data-i18n="nav.why">Why Logivex</a>
-          <a href="#quote" class="nav-cta" data-i18n="nav.cta">Get My Quote</a>
-        </nav>
-        <div class="lang-switch">
-          <label for="language-select" class="lang-label">Lang</label>
-          <select id="language-select" class="lang-select" aria-label="Select language">
-            <option value="en">EN</option>
-            <option value="nl">NL</option>
-            <option value="de">DE</option>
-          </select>
+    <header class="dh-header">
+      <div class="dh-container dh-header-inner">
+        <div class="dh-logo">
+          <div class="dh-logo-mark">Lx</div>
+          <div class="dh-logo-text">
+            <span class="dh-logo-title">Logivex</span>
+            <span class="dh-logo-subtitle">AI Automation Demos</span>
+          </div>
         </div>
+        <nav class="dh-nav">
+          <a href="/" class="dh-nav-link dh-nav-link-active">Home</a>
+          <a href="/#demos" class="dh-nav-link">Demos</a>
+        </nav>
       </div>
     </header>
 
-    <main class="page">
-      <section class="hero">
-        <div class="container hero-inner">
-          <div class="hero-copy">
-            <p class="hero-kicker" data-i18n="hero.kicker">Transport quotation platform</p>
-            <h1 data-i18n="hero.title">Get an Instant Transport Quote</h1>
-            <p class="hero-subtitle" data-i18n="hero.subtitle">
-              Enter your shipment details and receive a fast and reliable transport quote. Built for modern logistics and freight teams.
+    <main class="dh-main">
+      <!-- Hero Section -->
+      <section class="dh-hero dh-hero-large">
+        <div class="dh-container dh-hero-inner">
+          <div class="dh-hero-copy dh-hero-copy-centered">
+            <span class="dh-hero-badge">AI-Powered Solutions</span>
+            <h1>AI Automation for Logistics & Transport Companies</h1>
+            <p class="dh-hero-lead">
+              Transform your logistics operations with intelligent automation. From instant quotes to AI-powered email handling, we help you move faster, reduce costs, and delight customers.
             </p>
-            <button class="button hero-button" type="button" onclick="document.getElementById('quote').scrollIntoView({ behavior: 'smooth' })">
-              <span data-i18n="hero.button">Get My Quote</span>
-            </button>
+            <div class="dh-hero-actions">
+              <a href="#demos" class="dh-btn dh-btn-primary">Explore Demos</a>
+              <a href="#features" class="dh-btn dh-btn-outline">Learn More</a>
+            </div>
           </div>
-
-          <section class="card" id="quote" aria-label="Transport quote form">
-            <header class="card-header">
-              <h2 data-i18n="form.title">Request a transport quote</h2>
-              <p data-i18n="form.subtitle">Share your route, shipment details and contact information. We will send your quote by email.</p>
-            </header>
-
-            <form id="quote-form" class="form">
-              <div class="field">
-                <label for="pickupAddress" data-i18n="form.pickupLabel">Pickup address<span class="required">*</span></label>
-                <input
-                  type="text"
-                  id="pickupAddress"
-                  name="pickupAddress"
-                  required
-                  placeholder="e.g. Warehouse A, Berlin"
-                  data-i18n-placeholder="form.pickupPlaceholder"
-                />
-              </div>
-
-              <div class="field">
-                <label for="dropoffAddress" data-i18n="form.dropoffLabel">Drop-off address<span class="required">*</span></label>
-                <input
-                  type="text"
-                  id="dropoffAddress"
-                  name="dropoffAddress"
-                  required
-                  placeholder="e.g. Distribution Center, Hamburg"
-                  data-i18n-placeholder="form.dropoffPlaceholder"
-                />
-              </div>
-
-              <div class="form-divider">
-                <span data-i18n="form.shipmentSection">Shipment details</span>
-              </div>
-
-              <div class="field field-inline">
-                <div>
-                  <label for="weightKg" data-i18n="form.weightLabel">Total weight (kg)<span class="required">*</span></label>
-                  <input
-                    type="number"
-                    id="weightKg"
-                    name="weightKg"
-                    min="0"
-                    step="0.1"
-                    required
-                    placeholder="e.g. 500"
-                  />
-                </div>
-                <div>
-                  <label for="colli" data-i18n="form.colliLabel">Number of colli<span class="required">*</span></label>
-                  <input
-                    type="number"
-                    id="colli"
-                    name="colli"
-                    min="1"
-                    step="1"
-                    required
-                    placeholder="e.g. 10"
-                  />
-                </div>
-              </div>
-
-              <div class="field">
-                <label for="cargoType" data-i18n="form.cargoLabel">Cargo type<span class="required">*</span></label>
-                <select id="cargoType" name="cargoType" required>
-                  <option value="" data-i18n="form.cargoPlaceholder">Select cargo type</option>
-                  <option value="Pallet" data-i18n="form.cargoPallet">Pallet</option>
-                  <option value="Box" data-i18n="form.cargoBox">Box</option>
-                  <option value="Other" data-i18n="form.cargoOther">Other</option>
-                </select>
-              </div>
-
-              <div class="field field-inline">
-                <div>
-                  <label for="date" data-i18n="form.dateLabel">Pickup date<span class="required">*</span></label>
-                  <input type="date" id="date" name="date" required />
-                </div>
-                <div>
-                  <label for="vehicleType" data-i18n="form.vehicleLabel">Vehicle type<span class="required">*</span></label>
-                  <select id="vehicleType" name="vehicleType" required>
-                    <option value="" data-i18n="form.vehiclePlaceholder">Select vehicle</option>
-                    <option value="Van" data-i18n="form.vehicleVan">Van</option>
-                    <option value="Box truck" data-i18n="form.vehicleBox">Box truck</option>
-                    <option value="Trailer" data-i18n="form.vehicleTrailer">Trailer</option>
-                    <option value="Other" data-i18n="form.vehicleOther">Other</option>
-                  </select>
-                </div>
-              </div>
-
-              <div class="field field-inline">
-                <div>
-                  <label for="customerName" data-i18n="form.nameLabel">Your name<span class="required">*</span></label>
-                  <input
-                    type="text"
-                    id="customerName"
-                    name="customerName"
-                    required
-                    placeholder="e.g. Jane Doe"
-                  />
-                </div>
-                <div>
-                  <label for="customerEmail" data-i18n="form.emailLabel">Email address<span class="required">*</span></label>
-                  <input
-                    type="email"
-                    id="customerEmail"
-                    name="customerEmail"
-                    required
-                    placeholder="you@company.com"
-                  />
-                </div>
-              </div>
-
-              <div class="field">
-                <label for="notes" data-i18n="form.notesLabel">Notes / special instructions (optional)</label>
-                <textarea
-                  id="notes"
-                  name="notes"
-                  rows="3"
-                  placeholder="Time windows, loading requirements, references..."
-                ></textarea>
-              </div>
-
-              <div id="form-message" class="form-message" aria-live="polite"></div>
-
-              <button type="submit" class="button" id="submit-button">
-                <span class="button-label" data-i18n="form.submit">Send quote request</span>
-                <span class="button-spinner" aria-hidden="true"></span>
-              </button>
-
-              <div class="quote-metrics">
-                <div id="distance-display" class="metric-chip" aria-live="polite"></div>
-                <div class="price-highlight" aria-live="polite">
-                  <span class="price-label" data-i18n="price.label">Estimated price</span>
-                  <span id="price-estimate" class="price-value">–</span>
-                </div>
-              </div>
-            </form>
-          </section>
         </div>
       </section>
 
-      <section class="section" id="how-it-works">
-        <div class="container section-inner">
-          <header class="section-header">
-            <h2 data-i18n="how.title">How it works</h2>
-            <p data-i18n="how.subtitle">From shipment details to scheduled transport in three clear steps.</p>
+      <!-- Features Section -->
+      <section class="dh-section dh-features" id="features">
+        <div class="dh-container">
+          <header class="dh-section-header dh-section-header-centered">
+            <h2>What We Offer</h2>
+            <p>Smart automation solutions tailored for logistics and transport companies</p>
           </header>
-          <div class="steps-grid">
-            <article class="step">
-              <h3 data-i18n="how.step1Title">Step 1 — Enter shipment details</h3>
-              <p data-i18n="how.step1Text">Share your route, cargo type and timing so we understand your transport needs.</p>
+          <div class="dh-feature-grid">
+            <article class="dh-feature-card">
+              <div class="dh-feature-icon">🚛</div>
+              <h3>AI Quote Automation</h3>
+              <p>Instant transport price calculations with Google Maps integration. Reduce quote response time from hours to seconds.</p>
             </article>
-            <article class="step">
-              <h3 data-i18n="how.step2Title">Step 2 — Receive your quote</h3>
-              <p data-i18n="how.step2Text">We calculate a tailored transport quote and send it directly to your inbox.</p>
+            <article class="dh-feature-card">
+              <div class="dh-feature-icon">✉️</div>
+              <h3>AI Email Automation</h3>
+              <p>Automatically generate professional logistics emails from bullet points. Handle customer inquiries 24/7 without lifting a finger.</p>
             </article>
-            <article class="step">
-              <h3 data-i18n="how.step3Title">Step 3 — Confirm transport</h3>
-              <p data-i18n="how.step3Text">Approve the quote and we coordinate reliable transport with trusted carriers.</p>
+            <article class="dh-feature-card">
+              <div class="dh-feature-icon">📊</div>
+              <h3>Logistics Automation</h3>
+              <p>Smart dashboards, KPI tracking, and CRM integration. Get full visibility into your operations with AI-powered insights.</p>
             </article>
           </div>
         </div>
       </section>
 
-      <section class="section section-summary" aria-label="Quote summary">
-        <div class="container section-inner">
-          <header class="section-header">
-            <h2 data-i18n="summary.title">Quote summary</h2>
+      <!-- Featured Demo Section -->
+      <section class="dh-section dh-featured">
+        <div class="dh-container">
+          <header class="dh-section-header">
+            <h2>Featured demo</h2>
+            <p>Start here when you want to showcase the core Logivex transport quote experience.</p>
           </header>
-          <div class="summary-card">
-            <div class="summary-row">
-              <div class="summary-label" data-i18n="summary.route">Route</div>
-              <div id="summary-route" class="summary-value">–</div>
+          <article class="dh-featured-card" id="featured-card">
+            <div class="dh-featured-text">
+              <h3 id="featured-name">Loading…</h3>
+              <p id="featured-description"></p>
+              <span id="featured-category" class="dh-pill"></span>
             </div>
-            <div class="summary-row">
-              <div class="summary-label" data-i18n="summary.vehicle">Vehicle</div>
-              <div id="summary-vehicle" class="summary-value">–</div>
+            <div class="dh-featured-actions">
+              <button id="featured-button" class="dh-btn dh-btn-primary">Launch demo</button>
             </div>
-            <div class="summary-row">
-              <div class="summary-label" data-i18n="summary.weight">Weight / colli</div>
-              <div id="summary-weight" class="summary-value">–</div>
-            </div>
-            <div class="summary-row">
-              <div class="summary-label" data-i18n="summary.distance">Distance</div>
-              <div id="summary-distance" class="summary-value">–</div>
-            </div>
-            <div class="summary-row summary-row-price">
-              <div class="summary-label" data-i18n="summary.estimatedPrice">Estimated price</div>
-              <div id="summary-price" class="summary-price-value">–</div>
-            </div>
-          </div>
+          </article>
         </div>
       </section>
 
-      <section class="section section-trust" id="trust">
-        <div class="container section-inner">
-          <header class="section-header">
-            <h2 data-i18n="trust.title">Why logistics teams choose Logivex</h2>
+      <!-- All Demos Section -->
+      <section class="dh-section" id="demos">
+        <div class="dh-container">
+          <header class="dh-section-header">
+            <h2>All demos</h2>
+            <p>Select a demo card to open it in a new tab.</p>
           </header>
-          <div class="trust-grid">
-            <article class="trust-item">
-              <h3 data-i18n="trust.fastTitle">Fast response</h3>
-              <p data-i18n="trust.fastText">Quotes generated quickly so you can keep your operations moving.</p>
-            </article>
-            <article class="trust-item">
-              <h3 data-i18n="trust.reliableTitle">Reliable transport</h3>
-              <p data-i18n="trust.reliableText">Routes and partners focused on on-time performance and cargo safety.</p>
-            </article>
-            <article class="trust-item">
-              <h3 data-i18n="trust.transparentTitle">Transparent pricing</h3>
-              <p data-i18n="trust.transparentText">Clear, easy-to-understand quotes with no hidden fees or surprises.</p>
-            </article>
-          </div>
+          <div id="demo-grid" class="dh-grid"></div>
         </div>
       </section>
-
-      <footer class="footer">
-        <div class="container footer-inner">
-          <p class="footer-brand">Logivex</p>
-          <p class="footer-meta">
-            <span>Contact: </span
-            ><a href="mailto:info@logivex.com">info@logivex.com</a>
-          </p>
-          <p class="footer-meta">
-            © <span id="footer-year"></span> Logivex. All rights reserved.
-          </p>
-        </div>
-      </footer>
     </main>
 
-    <script src="app.js"></script>
-    <!-- Google Maps Places Autocomplete (replace YOUR_GOOGLE_MAPS_API_KEY) -->
-    <script
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCd5t5dqXG6mzbyp_DCC6zrWb_oLN-M5XM&libraries=places&callback=initLogivexMaps"
-      async
-      defer
-    ></script>
+    <footer class="dh-footer">
+      <div class="dh-container dh-footer-inner">
+        <span>© <span id="dh-year"></span> Logivex. AI Automation for Logistics & Transport.</span>
+        <span class="dh-footer-meta">Built on Node.js, Express & vanilla web tech.</span>
+      </div>
+    </footer>
+
+    <script src="demo-hub.js"></script>
   </body>
-  </html>
+</html>
 

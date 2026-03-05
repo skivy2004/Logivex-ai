@@ -7,7 +7,7 @@ const demos = [
     id: 'transport-quote',
     name: 'Transport Quote Automation',
     description: 'Instant transport price calculation with Google Maps and Make.com integration.',
-    url: '/',
+    url: '/quote-demo',
     category: 'Logistics'
   },
   {
