@@ -6,6 +6,19 @@
     <title>Logivex – Instant Transport Quotes</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
+<script>
+fetch("/api/config")
+  .then(r => r.json())
+  .then(data => {
+    const script = document.createElement("script");
+    script.src =
+      "https://maps.googleapis.com/maps/api/js?key=" +
+      data.googleMapsApiKey +
+      "&libraries=places&callback=initLogivexMaps";
+    script.async = true;
+    document.head.appendChild(script);
+  });
+</script>
   <body>
     <header class="site-header">
       <div class="container header-inner">
@@ -272,11 +285,15 @@
     </main>
 
     <script src="app.js"></script>
-    <!-- Google Maps Places Autocomplete (replace YOUR_GOOGLE_MAPS_API_KEY) -->
-    <script
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCd5t5dqXG6mzbyp_DCC6zrWb_oLN-M5XM&libraries=places&callback=initLogivexMaps"
-      async
-      defer
-    ></script>
+    <!-- Google Maps error handler -->
+    <script>
+      window.gm_authFailure = function() {
+        console.error('Google Maps authentication failed - API key may be invalid or restricted');
+        const pickupInput = document.getElementById('pickupAddress');
+        const dropoffInput = document.getElementById('dropoffAddress');
+        if (pickupInput) pickupInput.placeholder = 'Enter address manually';
+        if (dropoffInput) dropoffInput.placeholder = 'Enter address manually';
+      };
+    </script>
   </body>
 </html>

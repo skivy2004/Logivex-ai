@@ -6,11 +6,14 @@ const https = require('https');
 const http = require('http');
 const { calculateTransportPrice } = require('./pricing');
 const { demos } = require('./demos');
+const { validateEnvironment, getConfig } = require('./config/env');
+
+// Validate environment variables on startup
+validateEnvironment();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-
-const MAKE_WEBHOOK_URL = process.env.MAKE_WEBHOOK_URL || '';
+const config = getConfig();
+const PORT = config.port;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -29,8 +32,14 @@ app.get('/api/demos', (req, res) => {
   res.json({ demos });
 });
 
+app.get('/api/config', (req, res) => {
+  res.json({
+    googleMapsApiKey: config.googleMapsApiKey
+  });
+});
+
 app.post('/api/quote', (req, res) => {
-  if (!MAKE_WEBHOOK_URL) {
+  if (!config.webhooks.transportQuote) {
     return res.status(500).json({ success: false, message: 'Webhook URL not configured on server.' });
   }
 
@@ -70,7 +79,7 @@ app.post('/api/quote', (req, res) => {
 
   let parsedUrl;
   try {
-    parsedUrl = new URL(MAKE_WEBHOOK_URL);
+    parsedUrl = new URL(config.webhooks.transportQuote);
   } catch (e) {
     return res.status(500).json({ success: false, message: 'Invalid Make.com webhook URL configuration.' });
   }

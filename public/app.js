@@ -231,12 +231,18 @@ const LOGIVEX_EU_COUNTRIES = [
 let logivexLastDistanceKm = null;
 
 document.addEventListener('DOMContentLoaded', () => {
+  console.log('DOM loaded, initializing...');
+  
   const form = document.getElementById('quote-form');
   const messageEl = document.getElementById('form-message');
   const submitButton = document.getElementById('submit-button');
   const pickupInput = document.getElementById('pickupAddress');
   const dropoffInput = document.getElementById('dropoffAddress');
   const languageSelect = document.getElementById('language-select');
+
+  // Load Google Maps API key from backend
+  console.log('Calling loadGoogleMaps...');
+  loadGoogleMaps();
 
   function setMessage(text, type) {
     messageEl.textContent = text;
@@ -399,11 +405,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// Called by the Google Maps script via the `callback` parameter.
+// Called after Google Maps script loads successfully.
 // Sets up Places Autocomplete on pickup and drop-off address fields.
 function initLogivexMaps() {
+  console.log('Initializing Google Maps autocomplete...');
+  
   if (typeof google === 'undefined' || !google.maps || !google.maps.places) {
-    console.warn('Google Maps Places library not available.');
+    console.error('Google Maps Places library not available.');
     return;
   }
 
@@ -411,8 +419,11 @@ function initLogivexMaps() {
   const dropoffInput = document.getElementById('dropoffAddress');
 
   if (!pickupInput || !dropoffInput) {
+    console.error('Pickup or dropoff input fields not found');
     return;
   }
+  
+  console.log('Found pickup and dropoff inputs, attaching autocomplete...');
 
   const options = {
     fields: ['formatted_address', 'geometry', 'place_id', 'address_components'],
@@ -422,50 +433,61 @@ function initLogivexMaps() {
     }
   };
 
-  const pickupAutocomplete = new google.maps.places.Autocomplete(pickupInput, options);
-  const dropoffAutocomplete = new google.maps.places.Autocomplete(dropoffInput, options);
+  try {
+    const pickupAutocomplete = new google.maps.places.Autocomplete(pickupInput, options);
+    console.log('✓ Pickup autocomplete attached');
+    
+    const dropoffAutocomplete = new google.maps.places.Autocomplete(dropoffInput, options);
+    console.log('✓ Dropoff autocomplete attached');
 
-  pickupAutocomplete.addListener('place_changed', () => {
-    const place = pickupAutocomplete.getPlace();
-    if (!place) return;
+    pickupAutocomplete.addListener('place_changed', () => {
+      console.log('Pickup address selected from autocomplete');
+      const place = pickupAutocomplete.getPlace();
+      if (!place) return;
 
-    clearFieldError(pickupInput);
+      clearFieldError(pickupInput);
 
-    if (place.formatted_address) {
-      pickupInput.value = place.formatted_address;
-    }
+      if (place.formatted_address) {
+        pickupInput.value = place.formatted_address;
+      }
 
-    const parsed = parsePlace(place, pickupInput.value);
-    logivexPickupPlace = parsed;
+      const parsed = parsePlace(place, pickupInput.value);
+      logivexPickupPlace = parsed;
 
-    if (!validateAddressPlace(logivexPickupPlace, pickupInput)) {
-      logivexPickupPlace = null;
-      return;
-    }
+      if (!validateAddressPlace(logivexPickupPlace, pickupInput)) {
+        logivexPickupPlace = null;
+        return;
+      }
 
-    refreshDistanceAndPrice();
-  });
+      refreshDistanceAndPrice();
+    });
 
-  dropoffAutocomplete.addListener('place_changed', () => {
-    const place = dropoffAutocomplete.getPlace();
-    if (!place) return;
+    dropoffAutocomplete.addListener('place_changed', () => {
+      console.log('Dropoff address selected from autocomplete');
+      const place = dropoffAutocomplete.getPlace();
+      if (!place) return;
 
-    clearFieldError(dropoffInput);
+      clearFieldError(dropoffInput);
 
-    if (place.formatted_address) {
-      dropoffInput.value = place.formatted_address;
-    }
+      if (place.formatted_address) {
+        dropoffInput.value = place.formatted_address;
+      }
 
-    const parsed = parsePlace(place, dropoffInput.value);
-    logivexDropoffPlace = parsed;
+      const parsed = parsePlace(place, dropoffInput.value);
+      logivexDropoffPlace = parsed;
 
-    if (!validateAddressPlace(logivexDropoffPlace, dropoffInput)) {
-      logivexDropoffPlace = null;
-      return;
-    }
+      if (!validateAddressPlace(logivexDropoffPlace, dropoffInput)) {
+        logivexDropoffPlace = null;
+        return;
+      }
 
-    refreshDistanceAndPrice();
-  });
+      refreshDistanceAndPrice();
+    });
+    
+    console.log('✓ Google Places Autocomplete initialized successfully');
+  } catch (error) {
+    console.error('Error initializing Google Places Autocomplete:', error);
+  }
 }
 
 // Helper: use Google Distance Matrix to calculate distance in km
@@ -696,6 +718,70 @@ function updateQuoteSummary() {
     } else {
       weightEl.textContent = '–';
     }
+  }
+}
+
+// Load Google Maps API key from backend and initialize the script
+async function loadGoogleMaps() {
+  console.log('loadGoogleMaps() started');
+  
+  const pickupInput = document.getElementById('pickupAddress');
+  const dropoffInput = document.getElementById('dropoffAddress');
+  
+  // Show loading state
+  if (pickupInput) pickupInput.placeholder = 'Loading address autocomplete...';
+  if (dropoffInput) dropoffInput.placeholder = 'Loading address autocomplete...';
+  
+  try {
+    console.log('Fetching /api/config...');
+    const response = await fetch('/api/config');
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log('Config received:', data);
+    
+    const apiKey = data.googleMapsApiKey;
+    
+    if (!apiKey) {
+      console.warn('Google Maps API key not configured on server');
+      if (pickupInput) pickupInput.placeholder = 'Enter address manually';
+      if (dropoffInput) dropoffInput.placeholder = 'Enter address manually';
+      return;
+    }
+    
+    console.log('API key found, creating script...');
+    
+    // Create script element dynamically
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
+    script.async = true;
+    
+    script.onload = () => {
+      console.log('Google Maps script loaded successfully');
+      initLogivexMaps();
+      
+      // Restore original placeholders
+      if (pickupInput) pickupInput.placeholder = pickupInput.getAttribute('data-i18n-placeholder') || 'e.g. Warehouse A, Berlin';
+      if (dropoffInput) dropoffInput.placeholder = dropoffInput.getAttribute('data-i18n-placeholder') || 'e.g. Distribution Center, Hamburg';
+    };
+    
+    script.onerror = () => {
+      console.error('Failed to load Google Maps API script');
+      if (pickupInput) pickupInput.placeholder = 'Enter address manually';
+      if (dropoffInput) dropoffInput.placeholder = 'Enter address manually';
+    };
+    
+    document.head.appendChild(script);
+    console.log('Script appended to head, src:', script.src);
+    
+  } catch (error) {
+    console.error('Error in loadGoogleMaps:', error);
+    
+    if (pickupInput) pickupInput.placeholder = 'Enter address manually';
+    if (dropoffInput) dropoffInput.placeholder = 'Enter address manually';
   }
 }
 
