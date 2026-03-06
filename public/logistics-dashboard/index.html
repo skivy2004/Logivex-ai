@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Logistics KPI Dashboard | Logivex</title>
+    <link rel="stylesheet" href="../demo-hub.css" />
+    <link rel="stylesheet" href="dashboard.css" />
+  </head>
+  <body class="dashboard-page">
+    <header class="site-header header-visible">
+      <div class="dh-container header-inner">
+        <a href="/" class="logo" style="text-decoration: none;">
+          <div class="logo-mark">Lx</div>
+          <div class="logo-text">Logivex</div>
+        </a>
+        <nav class="main-nav">
+          <a href="/">Home</a>
+          <a href="/#demos">Demos</a>
+          <a href="/#contact" class="nav-cta">Contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="dashboard-main">
+      <section class="dashboard-hero">
+        <div class="dh-container">
+          <span class="section-label">Analytics</span>
+          <h1 class="dashboard-title">Logistics KPI Dashboard</h1>
+          <p class="dashboard-subtitle">High-level overview of shipments, routes and operational metrics.</p>
+        </div>
+      </section>
+
+      <section class="dashboard-section kpi-section">
+        <div class="dh-container">
+          <h2 class="dashboard-section-title">Key metrics</h2>
+          <div id="kpi-grid" class="kpi-grid"></div>
+        </div>
+      </section>
+
+      <section class="dashboard-section charts-section">
+        <div class="dh-container">
+          <h2 class="dashboard-section-title">Charts</h2>
+          <div class="charts-grid">
+            <div class="dashboard-card chart-card">
+              <h3 class="chart-title">Shipments per day (last 7 days)</h3>
+              <div class="chart-wrap"><canvas id="chart-shipments-line" aria-label="Shipments per day"></canvas></div>
+            </div>
+            <div class="dashboard-card chart-card">
+              <h3 class="chart-title">On-time vs delayed deliveries</h3>
+              <div class="chart-wrap chart-wrap--pie"><canvas id="chart-ontime-pie" aria-label="On-time vs delayed"></canvas></div>
+            </div>
+            <div class="dashboard-card chart-card">
+              <h3 class="chart-title">Cargo weight distribution</h3>
+              <div class="chart-wrap"><canvas id="chart-weight-bar" aria-label="Cargo weight by type"></canvas></div>
+            </div>
+            <div class="dashboard-card chart-card">
+              <h3 class="chart-title">Shipments by country</h3>
+              <div class="chart-wrap"><canvas id="chart-country-bar" aria-label="Shipments by country"></canvas></div>
+            </div>
+            <div class="dashboard-card chart-card chart-card--wide">
+              <h3 class="chart-title">Pickup vs delivery volume</h3>
+              <div class="chart-wrap"><canvas id="chart-pickup-delivery" aria-label="Pickup vs delivery"></canvas></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="dashboard-section table-section">
+        <div class="dh-container">
+          <h2 class="dashboard-section-title">Recent transport orders</h2>
+          <div class="dashboard-card table-card">
+            <div class="table-wrap">
+              <table class="dashboard-table" id="orders-table">
+                <thead>
+                  <tr>
+                    <th>Order ID</th>
+                    <th>Pickup</th>
+                    <th>Delivery</th>
+                    <th>Cargo</th>
+                    <th>Weight</th>
+                    <th>Pickup date</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="orders-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="dashboard-section map-section" id="map-section">
+        <div class="dh-container">
+          <h2 class="dashboard-section-title">Operations map</h2>
+          <div class="dashboard-card map-card">
+            <div id="dashboard-map" class="map-container" aria-label="Map of pickup and delivery locations"></div>
+            <p class="map-fallback" id="map-fallback">Map requires Google Maps API key. Configure GOOGLE_MAPS_API_KEY in .env to enable.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="dh-container">
+        <div class="footer-grid">
+          <div class="footer-brand">
+            <div class="logo">
+              <div class="logo-mark">Lx</div>
+              <div class="logo-text">Logivex</div>
+            </div>
+            <p class="footer-tagline">AI automation for logistics</p>
+          </div>
+          <div class="footer-links">
+            <h4>Explore</h4>
+            <a href="/#features">Features</a>
+            <a href="/#demos">Demos</a>
+            <a href="/#contact">Contact</a>
+          </div>
+          <div class="footer-contact">
+            <h4>Contact</h4>
+            <a href="mailto:info@logivex.com">info@logivex.com</a>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p>&copy; <span id="footer-year"></span> Logivex. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

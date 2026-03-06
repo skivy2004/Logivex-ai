@@ -8,10 +8,15 @@ const requiredEnvVars = [
 
 const optionalEnvVars = [
   'MAKE_WEBHOOK_EMAIL_AUTOMATION',
+  'MAKE_WEBHOOK_EMAIL',
   'MAKE_WEBHOOK_CONTACT_FORM', 
   'MAKE_WEBHOOK_DEMO_REQUEST',
   'MAKE_WEBHOOK_CRM_AI',
   'OPENAI_API_KEY',
+  'SAMPLE_EMAIL_PROMPT',
+  'SUPABASE_URL',
+  'SUPABASE_ANON_KEY',
+  'SUPABASE_SERVICE_ROLE_KEY',
   'PORT'
 ];
 
@@ -63,6 +68,9 @@ function validateEnvironment() {
   console.log(`   - Demo Request Webhook: ${process.env.MAKE_WEBHOOK_DEMO_REQUEST ? '✓ Configured' : 'Optional'}`);
   console.log(`   - CRM AI Webhook: ${process.env.MAKE_WEBHOOK_CRM_AI ? '✓ Configured' : 'Optional'}`);
   console.log(`   - OpenAI API: ${process.env.OPENAI_API_KEY ? '✓ Configured' : 'Optional (demo mode)'}`);
+  console.log(`   - Sample email prompt: ${process.env.SAMPLE_EMAIL_PROMPT ? '✓ Set' : 'Optional (email-demo AI example)'}`);
+  console.log(`   - Email extraction webhook: ${process.env.MAKE_WEBHOOK_EMAIL ? '✓ Configured' : 'Optional'}`);
+  console.log(`   - Supabase: ${process.env.SUPABASE_URL ? '✓ Configured' : 'Optional (auth & features)'}`);
   console.log('');
 }
 
@@ -70,8 +78,12 @@ function getConfig() {
   return {
     port: process.env.PORT || 3000,
     googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY,
+    sampleEmailPrompt: process.env.SAMPLE_EMAIL_PROMPT ? String(process.env.SAMPLE_EMAIL_PROMPT).trim() : '',
+    supabaseUrl: process.env.SUPABASE_URL || '',
+    supabaseAnonKey: process.env.SUPABASE_ANON_KEY || '',
     webhooks: {
       transportQuote: process.env.MAKE_WEBHOOK_TRANSPORT_QUOTE,
+      email: process.env.MAKE_WEBHOOK_EMAIL,
       emailAutomation: process.env.MAKE_WEBHOOK_EMAIL_AUTOMATION,
       contactForm: process.env.MAKE_WEBHOOK_CONTACT_FORM,
       demoRequest: process.env.MAKE_WEBHOOK_DEMO_REQUEST,

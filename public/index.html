@@ -16,6 +16,7 @@
         <nav class="main-nav">
           <a href="/">Home</a>
           <a href="/#demos">Demos</a>
+          <span id="auth-nav"></span>
           <a href="/#contact" class="nav-cta">Contact</a>
         </nav>
       </div>
@@ -39,7 +40,7 @@
           <a href="#demos" class="btn btn-primary">Get Started</a>
           <ul class="hero-features">
             <li>Instant transport quote calculation</li>
-            <li>Email → Order extraction</li>
+            <li><a href="/email-demo">Email → Order extraction</a></li>
             <li>Logistics dashboards</li>
           </ul>
         </div>
@@ -165,7 +166,9 @@
       </div>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="demo-hub.js"></script>
+    <script src="auth-nav.js"></script>
   </body>
 </html>
 

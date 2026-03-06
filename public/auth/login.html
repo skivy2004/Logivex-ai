@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Log in | Logivex</title>
+    <link rel="stylesheet" href="../demo-hub.css" />
+    <link rel="stylesheet" href="auth.css" />
+  </head>
+  <body class="auth-page">
+    <header class="site-header header-visible">
+      <div class="dh-container header-inner">
+        <a href="/" class="logo" style="text-decoration: none;">
+          <div class="logo-mark">Lx</div>
+          <div class="logo-text">Logivex</div>
+        </a>
+        <nav class="main-nav">
+          <a href="/">Home</a>
+          <a href="/signup">Sign up</a>
+          <a href="/#contact" class="nav-cta">Contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="auth-hero">
+        <div class="dh-container">
+          <h1 class="auth-title">Log in</h1>
+          <p class="auth-subtitle">Sign in to your account</p>
+        </div>
+      </section>
+
+      <div class="dh-container">
+        <div class="auth-card">
+          <form id="login-form" class="auth-form" novalidate>
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" name="email" placeholder="you@example.com" required autocomplete="email" />
+            </div>
+            <div class="form-group">
+              <label for="password">Password</label>
+              <input type="password" id="password" name="password" placeholder="••••••••" required autocomplete="current-password" />
+            </div>
+            <p id="form-message" class="form-message" role="alert" aria-live="polite"></p>
+            <button type="submit" class="btn-submit" id="submit-btn">Log in</button>
+          </form>
+          <p class="auth-links">Don't have an account? <a href="/signup">Sign up</a></p>
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="dh-container">
+        <div class="footer-bottom">
+          <p>&copy; <span id="footer-year"></span> Logivex. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="login.js"></script>
+  </body>
+</html>

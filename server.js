@@ -8,6 +8,13 @@ const { calculateTransportPrice } = require('./pricing');
 const { demos } = require('./demos');
 const { validateEnvironment, getConfig } = require('./config/env');
 const { optimizeRoutes, evaluateRoute, findMatchingCarriers, generateRecommendations, MOCK_CARRIERS } = require('./routing');
+const { handleExtractOrder } = require('./api/extract-order');
+const { handleCreateLead } = require('./api/create-lead');
+const crmService = require('./services/crm-service');
+const openaiService = require('./services/openai-service');
+const { requireAuth, requireAdmin } = require('./lib/authMiddleware');
+const { getSupabaseAdmin } = require('./lib/supabaseClient');
+const logger = require('./utils/logger');
 
 // Validate environment variables on startup
 validateEnvironment();
@@ -16,8 +23,8 @@ const app = express();
 const config = getConfig();
 const PORT = config.port;
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '100kb' }));
+app.use(express.urlencoded({ extended: true, limit: '100kb' }));
 
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -33,18 +40,149 @@ app.get('/extract-order-demo', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'extract-order-demo', 'index.html'));
 });
 
+app.get('/email-demo', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'email-demo', 'index.html'));
+});
+
+app.get('/crm-demo', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'crm-demo', 'index.html'));
+});
+
 app.get('/routing-demo', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'routing-demo', 'index.html'));
 });
 
-app.get('/api/demos', (req, res) => {
-  res.json({ demos });
+app.get('/logistics-dashboard', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'logistics-dashboard', 'index.html'));
+});
+
+app.get('/api/demos', async (req, res) => {
+  try {
+    const supabase = getSupabaseAdmin();
+    let statusMap = {};
+    if (supabase) {
+      const { data: rows } = await supabase.from('features').select('id, status');
+      if (Array.isArray(rows)) rows.forEach(r => { statusMap[r.id] = r.status; });
+    }
+    const merged = demos.map(d => ({
+      ...d,
+      status: statusMap[d.id] != null ? statusMap[d.id] : d.status
+    }));
+    res.json({ demos: merged });
+  } catch (err) {
+    logger.error('Demos fetch error', { error: err.message });
+    res.json({ demos });
+  }
 });
 
 app.get('/api/config', (req, res) => {
-  res.json({
+  const out = {
     googleMapsApiKey: config.googleMapsApiKey
+  };
+  if (config.supabaseUrl && config.supabaseAnonKey) {
+    out.supabaseUrl = config.supabaseUrl;
+    out.supabaseAnonKey = config.supabaseAnonKey;
+  }
+  res.json(out);
+});
+
+// --- Auth & profile ---
+app.post('/api/profile', requireAuth, async (req, res) => {
+  try {
+    const name = typeof req.body?.name === 'string' ? req.body.name.trim() : '';
+    if (!name) return res.status(400).json({ success: false, message: 'Name is required.' });
+    const supabase = getSupabaseAdmin();
+    if (!supabase) return res.status(503).json({ success: false, message: 'Auth not configured.' });
+    const { id } = req.authUser;
+    const email = req.authUser.email || '';
+    const { error } = await supabase.from('users').upsert(
+      { id, name, email, role: 'user' },
+      { onConflict: 'id' }
+    );
+    if (error) {
+      logger.error('Profile upsert error', { error: error.message });
+      return res.status(500).json({ success: false, message: 'Failed to save profile.' });
+    }
+    res.json({ success: true });
+  } catch (err) {
+    logger.error('Profile route error', { error: err.message });
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+});
+
+app.get('/api/me', requireAuth, (req, res) => {
+  res.json({
+    success: true,
+    user: {
+      id: req.userProfile.id,
+      email: req.userProfile.email,
+      name: req.userProfile.name,
+      role: req.userProfile.role || 'user'
+    }
   });
+});
+
+// --- Admin: features (status) ---
+app.get('/api/features', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const supabase = getSupabaseAdmin();
+    if (!supabase) return res.status(503).json({ success: false, message: 'Supabase not configured.' });
+    const { data, error } = await supabase.from('features').select('id, name, status, updated_at').order('id');
+    if (error) {
+      return res.status(500).json({ success: false, message: error.message });
+    }
+    const byId = (data || []).reduce((acc, r) => { acc[r.id] = r; return acc; }, {});
+    const merged = demos.map(d => ({
+      id: d.id,
+      name: d.name,
+      status: byId[d.id]?.status != null ? byId[d.id].status : d.status,
+      updated_at: byId[d.id]?.updated_at || null
+    }));
+    res.json({ success: true, data: merged });
+  } catch (err) {
+    logger.error('Features list error', { error: err.message });
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+});
+
+app.patch('/api/features/:id', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const id = req.params.id && req.params.id.trim();
+    if (!id) return res.status(400).json({ success: false, message: 'Feature id required.' });
+    const status = req.body?.status;
+    const allowed = ['beta', 'online', 'coming_soon'];
+    if (!allowed.includes(status)) {
+      return res.status(400).json({ success: false, message: 'Invalid status. Use: beta, online, coming_soon' });
+    }
+    const supabase = getSupabaseAdmin();
+    if (!supabase) return res.status(503).json({ success: false, message: 'Supabase not configured.' });
+    const demo = demos.find(d => d.id === id);
+    const name = demo ? demo.name : id;
+    const { error } = await supabase.from('features').upsert(
+      { id, name, status, updated_at: new Date().toISOString() },
+      { onConflict: 'id' }
+    );
+    if (error) {
+      logger.error('Feature update error', { error: error.message });
+      return res.status(500).json({ success: false, message: error.message });
+    }
+    res.json({ success: true, data: { id, name, status } });
+  } catch (err) {
+    logger.error('Feature patch error', { error: err.message });
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+});
+
+app.get('/login', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'auth', 'login.html'));
+});
+
+app.get('/signup', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'auth', 'signup.html'));
+});
+
+app.get('/admin/dashboard', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'auth', 'admin.html'));
 });
 
 app.post('/api/quote', (req, res) => {
@@ -171,124 +309,90 @@ app.post('/api/quote', (req, res) => {
   makeReq.end();
 });
 
-// POST /api/extract-order - Extract transport order details from email text using AI
+// POST /api/extract-order - Extract transport order from email text (AI + fallback)
+// Accepts { email } or { email_text }. Response: { success, data } with normalized fields.
 app.post('/api/extract-order', async (req, res) => {
-  const { email_text } = req.body || {};
-
-  if (!email_text || typeof email_text !== 'string') {
-    return res.status(400).json({ 
-      success: false, 
-      message: 'Please provide email text to extract.' 
-    });
-  }
-
-  // Check if OpenAI API key is configured
-  const openaiApiKey = process.env.OPENAI_API_KEY;
-
-  if (!openaiApiKey) {
-    // Return demo data if OpenAI is not configured
-    console.log('OpenAI API key not configured, returning demo data');
-    
-    // Parse email text for demo purposes (simple pattern matching)
-    const pickupMatch = email_text.match(/(?:pickup|from|departure)[\s:]+([^\n,]+)/i);
-    const deliveryMatch = email_text.match(/(?:delivery|to|destination)[\s:]+([^\n,]+)/i);
-    const palletMatch = email_text.match(/(\d+)\s*(?:pallets?|colli)/i);
-    const weightMatch = email_text.match(/(\d+[\s,]*\d*)\s*(?:kg|kilo)/i);
-    const dateMatch = email_text.match(/(?:tomorrow|today|next week|\d{1,2}[\/\.-]\d{1,2}[\/\.-]\d{2,4})/i);
-
-    return res.json({
-      pickup: pickupMatch ? pickupMatch[1].trim() : 'Rotterdam',
-      delivery: deliveryMatch ? deliveryMatch[1].trim() : 'Milan',
-      pallets: palletMatch ? parseInt(palletMatch[1]) : 12,
-      weight: weightMatch ? `${weightMatch[1].replace(/[\s,]/g, '')} kg` : '4500 kg',
-      pickup_date: dateMatch ? dateMatch[0] : 'Tomorrow',
-      source: 'demo-fallback',
-      note: 'OpenAI API not configured. Using demo extraction.'
-    });
-  }
-
   try {
-    // Call OpenAI API for extraction
-    const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${openaiApiKey}`
-      },
-      body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
-        messages: [
-          {
-            role: 'system',
-            content: `You are a logistics data extraction assistant. Extract transport order details from the provided email text.
-
-Return ONLY a JSON object with these fields:
-- pickup: The pickup location (city/address)
-- delivery: The delivery destination (city/address)
-- pallets: Number of pallets/collo (as integer, null if not mentioned)
-- weight: Weight with unit (e.g., "4500 kg", null if not mentioned)
-- pickup_date: Pickup date or relative time (e.g., "Tomorrow", "2024-03-15", null if not mentioned)
-
-If a field is not found in the text, return null for that field.
-Return valid JSON only, no markdown formatting.`
-          },
-          {
-            role: 'user',
-            content: email_text
-          }
-        ],
-        temperature: 0.1,
-        max_tokens: 500
-      })
+    const result = await handleExtractOrder(req.body || {});
+    if (result.success) {
+      return res.json({ success: true, data: result.data });
+    }
+    return res.status(400).json({
+      success: false,
+      message: result.error || 'Please provide email text to extract.'
     });
-
-    if (!openaiResponse.ok) {
-      const errorData = await openaiResponse.json().catch(() => ({}));
-      console.error('OpenAI API error:', errorData);
-      return res.status(502).json({
-        success: false,
-        message: 'Error extracting order details. Please try again.'
-      });
-    }
-
-    const openaiData = await openaiResponse.json();
-    const aiContent = openaiData.choices?.[0]?.message?.content;
-
-    if (!aiContent) {
-      return res.status(502).json({
-        success: false,
-        message: 'No response from AI service.'
-      });
-    }
-
-    // Parse the AI response
-    let extractedData;
-    try {
-      extractedData = JSON.parse(aiContent);
-    } catch (parseError) {
-      console.error('Failed to parse AI response:', aiContent);
-      return res.status(502).json({
-        success: false,
-        message: 'Error parsing extraction results.'
-      });
-    }
-
-    // Validate and return the extracted data
-    res.json({
-      pickup: extractedData.pickup || null,
-      delivery: extractedData.delivery || null,
-      pallets: extractedData.pallets || null,
-      weight: extractedData.weight || null,
-      pickup_date: extractedData.pickup_date || null,
-      source: 'openai'
-    });
-
-  } catch (error) {
-    console.error('Error in extract-order:', error);
+  } catch (err) {
+    logger.error('Extract-order route error', { error: err.message });
     return res.status(502).json({
       success: false,
       message: 'Error extracting order details. Please try again.'
     });
+  }
+});
+
+// POST /api/generate-sample-email - Generate a sample transport email using SAMPLE_EMAIL_PROMPT from config (OpenAI, server-side only)
+app.post('/api/generate-sample-email', async (req, res) => {
+  try {
+    const prompt = config.sampleEmailPrompt;
+    if (!prompt) {
+      return res.status(503).json({
+        success: false,
+        message: 'Sample email prompt is not configured. Set SAMPLE_EMAIL_PROMPT in .env to enable.'
+      });
+    }
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      return res.status(503).json({
+        success: false,
+        message: 'Sample email generation is not configured. Set OPENAI_API_KEY to enable.'
+      });
+    }
+    const email = await openaiService.generateSampleEmail(prompt, apiKey);
+    if (!email) {
+      return res.status(502).json({
+        success: false,
+        message: 'Could not generate sample email. Please try again.'
+      });
+    }
+    return res.json({ success: true, data: { email } });
+  } catch (err) {
+    logger.error('Generate sample email error', { error: err.message });
+    return res.status(502).json({
+      success: false,
+      message: 'Error generating sample email. Please try again.'
+    });
+  }
+});
+
+// POST /api/create-lead - Extract lead from message, classify, and add to CRM (demo)
+app.post('/api/create-lead', async (req, res) => {
+  try {
+    const result = await handleCreateLead(req.body || {});
+    if (result.success) {
+      return res.json({ success: true, data: result.data });
+    }
+    return res.status(400).json({
+      success: false,
+      message: result.error || 'Please provide a message to analyze.'
+    });
+  } catch (err) {
+    logger.error('Create-lead route error', { error: err.message });
+    return res.status(502).json({
+      success: false,
+      message: 'Error creating lead. Please try again.'
+    });
+  }
+});
+
+// GET /api/leads - Recent leads for CRM demo dashboard (in-memory)
+app.get('/api/leads', (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit, 10) || 20, 50);
+    const leads = crmService.getRecentLeads(limit);
+    return res.json({ success: true, data: leads });
+  } catch (err) {
+    logger.error('Leads route error', { error: err.message });
+    return res.status(500).json({ success: false, message: 'Error fetching leads.' });
   }
 });
 

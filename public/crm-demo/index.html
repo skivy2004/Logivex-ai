@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI CRM Automation | Logivex</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a href="/" class="logo">
+          <span class="logo-mark">Lx</span>
+          <span class="logo-text">Logivex</span>
+        </a>
+        <nav class="main-nav">
+          <a href="/">Home</a>
+          <a href="/#demos">Demos</a>
+          <a href="/#contact" class="nav-cta">Contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="page">
+      <section class="hero">
+        <div class="container hero-inner">
+          <h1 class="hero-title">AI CRM Automation</h1>
+          <p class="hero-subtitle">
+            Paste a message and let AI extract lead information, classify the lead, and create a CRM contact automatically.
+          </p>
+        </div>
+      </section>
+
+      <section class="demo-section">
+        <div class="container demo-layout">
+          <div class="demo-main">
+            <div class="demo-card">
+              <div class="demo-input-group">
+                <label for="message-input" class="input-label">Incoming message</label>
+                <textarea
+                  id="message-input"
+                  class="message-textarea"
+                  name="message"
+                  rows="10"
+                  placeholder="Paste a message (email, chat, or form submission)..."
+                ></textarea>
+              </div>
+
+              <div class="demo-actions">
+                <button type="button" id="analyze-btn" class="btn btn-primary analyze-btn">Analyze Lead</button>
+                <button type="button" id="example-btn" class="btn btn-secondary">Use example</button>
+                <button type="button" id="clear-btn" class="btn btn-ghost">Clear</button>
+              </div>
+
+              <div id="form-message" class="form-message" role="alert" aria-live="polite"></div>
+
+              <div id="automation-steps" class="automation-steps" hidden aria-live="polite">
+                <h3 class="automation-title">Automation</h3>
+                <div class="automation-flow">
+                  <div id="step-ai" class="automation-step"><span class="step-icon"></span><span class="step-label">AI Processing</span></div>
+                  <div class="flow-arrow" aria-hidden="true">↓</div>
+                  <div id="step-lead" class="automation-step"><span class="step-icon"></span><span class="step-label">Lead Created</span></div>
+                  <div class="flow-arrow" aria-hidden="true">↓</div>
+                  <div id="step-crm" class="automation-step"><span class="step-icon"></span><span class="step-label">CRM Updated</span></div>
+                  <div class="flow-arrow" aria-hidden="true">↓</div>
+                  <div id="step-sales" class="automation-step"><span class="step-icon"></span><span class="step-label">Sales Notified</span></div>
+                </div>
+              </div>
+
+              <div id="result-section" class="result-section" hidden>
+                <h2 class="result-title">Lead Contact</h2>
+                <div id="lead-card" class="lead-card"></div>
+              </div>
+            </div>
+          </div>
+
+          <aside class="demo-sidebar">
+            <div class="sidebar-card">
+              <h3 class="sidebar-title">Recent Leads</h3>
+              <div id="recent-leads" class="recent-leads">
+                <p class="recent-leads-empty" id="recent-leads-empty">No leads yet. Analyze a message to add one.</p>
+                <ul id="recent-leads-list" class="recent-leads-list" hidden></ul>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container footer-inner">
+        <p class="footer-brand">Logivex</p>
+        <p class="footer-meta">AI automation for logistics</p>
+      </div>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>

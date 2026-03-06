@@ -20,20 +20,12 @@ const demos = [
     status: 'beta'
   },
   {
-    id: 'extract-order',
-    name: 'Email → Order AI',
-    description: 'Upload or paste a transport request email and let AI extract shipment details automatically.',
-    url: '/extract-order-demo',
-    category: 'AI Automation',
-    status: 'beta'
-  },
-  {
-    id: 'email-ai',
-    name: 'AI Email Automation',
-    description: 'Generate professional logistics emails from simple bullet points.',
+    id: 'email-extract',
+    name: 'AI Email → Transport Order Extraction',
+    description: 'Paste a logistics email and let AI convert it into a structured transport order.',
     url: '/email-demo',
     category: 'AI Automation',
-    status: 'coming_soon'
+    status: 'online'
   },
   {
     id: 'logistics-dashboard',
@@ -41,15 +33,15 @@ const demos = [
     description: 'Get a high-level overview of shipments, routes and operational metrics.',
     url: '/logistics-dashboard',
     category: 'Analytics',
-    status: 'coming_soon'
+    status: 'online'
   },
   {
     id: 'crm-ai',
     name: 'AI CRM Automation',
-    description: 'Connect deals, shipments and follow-ups with AI-assisted workflows.',
-    url: '/crm-ai-demo',
+    description: 'Extract lead information from messages and create CRM contacts automatically with AI.',
+    url: '/crm-demo',
     category: 'AI Automation',
-    status: 'coming_soon'
+    status: 'beta'
   }
 ];
 

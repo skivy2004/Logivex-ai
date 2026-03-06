@@ -145,6 +145,16 @@ body {
   background: rgba(248, 249, 252, 0.8);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  transform: translateY(-100%);
+  opacity: 0;
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+.site-header.header-visible {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .header-inner {
@@ -198,7 +208,7 @@ body {
 
 .nav-cta {
   padding: 10px 24px;
-  background: var(--text-primary);
+  background: var(--accent-blue);
   color: var(--text-light) !important;
   border-radius: var(--radius-full);
   text-decoration: none;
@@ -206,6 +216,7 @@ body {
 
 .nav-cta:hover {
   background: var(--accent-blue);
+  filter: brightness(1.08);
   text-decoration: none;
 }
 
@@ -309,6 +320,17 @@ body {
   content: '•';
   color: var(--accent-blue);
   font-weight: 700;
+}
+
+.hero-features a {
+  color: inherit;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.hero-features a:hover {
+  color: var(--accent-blue);
+  text-decoration: underline;
 }
 
 /* ========================================
@@ -550,6 +572,10 @@ body {
 .bento-card-content {
   position: relative;
   z-index: 1;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .bento-card-badge {

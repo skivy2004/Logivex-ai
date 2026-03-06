@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin – Feature status | Logivex</title>
+    <link rel="stylesheet" href="../demo-hub.css" />
+    <link rel="stylesheet" href="auth.css" />
+  </head>
+  <body class="auth-page">
+    <header class="site-header header-visible">
+      <div class="dh-container header-inner">
+        <a href="/" class="logo" style="text-decoration: none;">
+          <div class="logo-mark">Lx</div>
+          <div class="logo-text">Logivex</div>
+        </a>
+        <nav class="main-nav">
+          <a href="/">Home</a>
+          <a href="/#demos">Demos</a>
+          <a href="/admin/dashboard">Admin</a>
+          <a href="#" id="logout-link" class="nav-cta">Log out</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="auth-hero">
+        <div class="dh-container">
+          <h1 class="auth-title">Admin dashboard</h1>
+          <p class="auth-subtitle">Manage feature status for homepage cards</p>
+        </div>
+      </section>
+
+      <section class="admin-section">
+        <div class="dh-container">
+          <h2 class="admin-title">Feature status</h2>
+          <div class="admin-card">
+            <p id="admin-message" class="admin-message"></p>
+            <table class="admin-table" id="features-table">
+              <thead>
+                <tr>
+                  <th>Feature</th>
+                  <th>Current status</th>
+                  <th>Change to</th>
+                </tr>
+              </thead>
+              <tbody id="features-tbody"></tbody>
+            </table>
+            <div class="admin-actions">
+              <button type="button" class="btn-save" id="save-btn">Save changes</button>
+              <span id="save-status" class="admin-message"></span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="dh-container">
+        <div class="footer-bottom">
+          <p>&copy; <span id="footer-year"></span> Logivex. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="admin.js"></script>
+  </body>
+</html>
