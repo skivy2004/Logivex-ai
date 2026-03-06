@@ -6,6 +6,8 @@
   var submitBtn = document.getElementById('submit-btn');
   var supabase = null;
 
+  if (!form || !submitBtn) return;
+
   function setMessage(text, type) {
     messageEl.textContent = text || '';
     messageEl.className = 'form-message' + (type === 'error' ? ' error' : type === 'success' ? ' success' : '');
@@ -18,6 +20,7 @@
 
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
+    e.stopPropagation();
     var name = document.getElementById('name').value.trim();
     var email = document.getElementById('email').value.trim();
     var password = document.getElementById('password').value;
