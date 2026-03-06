@@ -6,7 +6,7 @@ const demos = [
   {
     id: 'transport-quote',
     name: 'Transport Quote Automation',
-    description: 'Instant transport price calculation with Google Maps and Make.com integration.',
+    description: 'Instantly calculate transport prices using Google Maps distance and shipment data.',
     url: '/quote-demo',
     category: 'Logistics',
     status: 'online'
@@ -14,7 +14,7 @@ const demos = [
   {
     id: 'extract-order',
     name: 'Email → Order AI',
-    description: 'Upload or paste a transport request email and let AI extract the shipment details automatically.',
+    description: 'Upload or paste a transport request email and let AI extract shipment details automatically.',
     url: '/extract-order-demo',
     category: 'AI Automation',
     status: 'beta'
@@ -22,7 +22,7 @@ const demos = [
   {
     id: 'email-ai',
     name: 'AI Email Automation',
-    description: 'Automatically generate professional logistics emails from a few bullet points.',
+    description: 'Generate professional logistics emails from simple bullet points.',
     url: '/email-demo',
     category: 'AI Automation',
     status: 'coming_soon'
@@ -30,7 +30,7 @@ const demos = [
   {
     id: 'logistics-dashboard',
     name: 'Logistics KPI Dashboard',
-    description: 'High-level overview of shipments, lanes and service levels.',
+    description: 'Get a high-level overview of shipments, routes and operational metrics.',
     url: '/logistics-dashboard',
     category: 'Analytics',
     status: 'coming_soon'
@@ -38,7 +38,7 @@ const demos = [
   {
     id: 'crm-ai',
     name: 'AI CRM Automation',
-    description: 'Connect deals, transports and follow-ups with AI-assisted workflows.',
+    description: 'Connect deals, shipments and follow-ups with AI-assisted workflows.',
     url: '/crm-ai-demo',
     category: 'AI Automation',
     status: 'coming_soon'

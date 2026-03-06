@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Logivex – Instant Transport Quotes</title>
     <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="cargo-styles.css" />
   </head>
 <script>
 fetch("/api/config")
@@ -84,58 +85,42 @@ fetch("/api/config")
                 <span data-i18n="form.shipmentSection">Shipment details</span>
               </div>
 
-              <div class="field field-inline">
-                <div>
-                  <label for="weightKg" data-i18n="form.weightLabel">Total weight (kg)<span class="required">*</span></label>
-                  <input
-                    type="number"
-                    id="weightKg"
-                    name="weightKg"
-                    min="0"
-                    step="0.1"
-                    required
-                    placeholder="e.g. 500"
-                  />
+              <!-- Cargo Items Section -->
+              <div class="cargo-section">
+                <label class="section-label">Cargo items<span class="required">*</span></label>
+                <div id="cargo-items-container" class="cargo-items-container">
+                  <!-- First cargo row (default) -->
+                  <div class="cargo-row" data-row-index="0">
+                    <div class="cargo-field">
+                      <label>Cargo type</label>
+                      <select name="cargoType[]" class="cargo-type-select" required>
+                        <option value="">Select type</option>
+                        <option value="pallets">Pallets</option>
+                        <option value="boxes">Boxes</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+                    <div class="cargo-field quantity-field">
+                      <label>Quantity</label>
+                      <input type="number" name="cargoQuantity[]" min="1" step="1" value="1" required />
+                    </div>
+                    <button type="button" class="remove-cargo-btn" style="display: none;" aria-label="Remove cargo item">
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                    </button>
+                  </div>
                 </div>
-                <div>
-                  <label for="colli" data-i18n="form.colliLabel">Number of colli<span class="required">*</span></label>
-                  <input
-                    type="number"
-                    id="colli"
-                    name="colli"
-                    min="1"
-                    step="1"
-                    required
-                    placeholder="e.g. 10"
-                  />
+                <div class="other-description-container" style="display: none;">
+                  <label>Other cargo description</label>
+                  <input type="text" name="otherCargoDescription" placeholder="Describe your cargo..." />
                 </div>
+                <button type="button" id="add-cargo-btn" class="add-cargo-btn">
+                  <span>+ Add cargo item</span>
+                </button>
               </div>
 
               <div class="field">
-                <label for="cargoType" data-i18n="form.cargoLabel">Cargo type<span class="required">*</span></label>
-                <select id="cargoType" name="cargoType" required>
-                  <option value="" data-i18n="form.cargoPlaceholder">Select cargo type</option>
-                  <option value="Pallet" data-i18n="form.cargoPallet">Pallet</option>
-                  <option value="Box" data-i18n="form.cargoBox">Box</option>
-                  <option value="Other" data-i18n="form.cargoOther">Other</option>
-                </select>
-              </div>
-
-              <div class="field field-inline">
-                <div>
-                  <label for="date" data-i18n="form.dateLabel">Pickup date<span class="required">*</span></label>
-                  <input type="date" id="date" name="date" required />
-                </div>
-                <div>
-                  <label for="vehicleType" data-i18n="form.vehicleLabel">Vehicle type<span class="required">*</span></label>
-                  <select id="vehicleType" name="vehicleType" required>
-                    <option value="" data-i18n="form.vehiclePlaceholder">Select vehicle</option>
-                    <option value="Van" data-i18n="form.vehicleVan">Van</option>
-                    <option value="Box truck" data-i18n="form.vehicleBox">Box truck</option>
-                    <option value="Trailer" data-i18n="form.vehicleTrailer">Trailer</option>
-                    <option value="Other" data-i18n="form.vehicleOther">Other</option>
-                  </select>
-                </div>
+                <label for="date" data-i18n="form.dateLabel">Pickup date<span class="required">*</span></label>
+                <input type="date" id="date" name="date" required />
               </div>
 
               <div class="field field-inline">
@@ -224,12 +209,8 @@ fetch("/api/config")
               <div id="summary-route" class="summary-value">–</div>
             </div>
             <div class="summary-row">
-              <div class="summary-label" data-i18n="summary.vehicle">Vehicle</div>
-              <div id="summary-vehicle" class="summary-value">–</div>
-            </div>
-            <div class="summary-row">
-              <div class="summary-label" data-i18n="summary.weight">Weight / colli</div>
-              <div id="summary-weight" class="summary-value">–</div>
+              <div class="summary-label">Cargo</div>
+              <div id="summary-cargo" class="summary-value">–</div>
             </div>
             <div class="summary-row">
               <div class="summary-label" data-i18n="summary.distance">Distance</div>

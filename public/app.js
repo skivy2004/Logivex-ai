@@ -8,21 +8,15 @@ let logivexDropoffPlace = null;
 const LOGIVEX_PRICING = {
   startFee: 25,
   pricePerKm: 0.9,
-  vehicleFactor: {
-    van: 1.0,
-    'box truck': 1.3,
-    trailer: 1.6,
-    other: 1.2
-  }
+  pricePerCargoUnit: 5  // €5 per cargo unit (pallet/box/other item)
 };
 
-function calculateTransportPriceClient(distanceKm, vehicleType) {
+function calculateTransportPriceClient(distanceKm, totalCargoUnits) {
   if (typeof distanceKm !== 'number' || !Number.isFinite(distanceKm) || distanceKm < 0) {
     return null;
   }
-  const normalizedType = (vehicleType || '').toString().toLowerCase();
-  const factor = LOGIVEX_PRICING.vehicleFactor[normalizedType] || 1;
-  const price = (LOGIVEX_PRICING.startFee + distanceKm * LOGIVEX_PRICING.pricePerKm) * factor;
+  const units = Math.max(1, parseInt(totalCargoUnits) || 1);
+  const price = LOGIVEX_PRICING.startFee + (distanceKm * LOGIVEX_PRICING.pricePerKm) + (units * LOGIVEX_PRICING.pricePerCargoUnit);
   return Number(price.toFixed(2));
 }
 
@@ -257,6 +251,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const dropoffInput = document.getElementById('dropoffAddress');
   const languageSelect = document.getElementById('language-select');
 
+  // Initialize cargo management
+  initCargoManagement();
+
   // Load Google Maps API key from backend
   console.log('Calling loadGoogleMaps...');
   loadGoogleMaps();
@@ -319,14 +316,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const vehicleType = formData.get('vehicleType');
 
+    // Collect cargo items
+    const cargoItems = [];
+    const cargoTypeSelects = form.querySelectorAll('select[name="cargoType[]"]');
+    const cargoQuantityInputs = form.querySelectorAll('input[name="cargoQuantity[]"]');
+    const otherDescription = formData.get('otherCargoDescription');
+    
+    cargoTypeSelects.forEach((select, index) => {
+      const type = select.value;
+      const quantityInput = cargoQuantityInputs[index];
+      const quantity = quantityInput ? parseInt(quantityInput.value) || 0 : 0;
+      
+      if (type && quantity > 0) {
+        const item = { type, quantity };
+        // If this is the 'other' type row and we have a description, add it
+        if (type === 'other' && otherDescription) {
+          item.description = otherDescription;
+        }
+        cargoItems.push(item);
+      }
+    });
+
+    // Calculate total cargo units for pricing
+    const totalCargoUnits = cargoItems.reduce((sum, item) => sum + item.quantity, 0);
+
     const payload = {
       pickupAddress,
       dropoffAddress,
       date: formData.get('date'),
-      vehicleType,
-      weightKg: formData.get('weightKg')?.toString().trim(),
-      colli: formData.get('colli')?.toString().trim(),
-      cargoType: formData.get('cargoType')?.toString().trim(),
+      cargoItems,
+      totalCargoUnits,
       customerName: formData.get('customerName')?.toString().trim(),
       customerEmail: formData.get('customerEmail')?.toString().trim(),
       notes: formData.get('notes')?.toString().trim(),
@@ -357,7 +376,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    if (!payload.date || !payload.vehicleType || !payload.customerName || !payload.customerEmail) {
+    if (!payload.date || !payload.cargoItems.length || !payload.customerName || !payload.customerEmail) {
       setMessage('Please fill in all required fields.', 'error');
       return;
     }
@@ -371,7 +390,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       if (typeof logivexLastDistanceKm === 'number') {
         payload.distanceKm = logivexLastDistanceKm;
-        const price = calculateTransportPriceClient(logivexLastDistanceKm, vehicleType);
+        const price = calculateTransportPriceClient(logivexLastDistanceKm, totalCargoUnits);
         if (price != null) {
           payload.calculatedPrice = price;
         }
@@ -648,8 +667,19 @@ function clearFieldError(inputEl) {
 async function refreshDistanceAndPrice() {
   const pickupAddress = logivexPickupPlace?.formattedAddress;
   const dropoffAddress = logivexDropoffPlace?.formattedAddress;
-  const vehicleTypeSelect = document.getElementById('vehicleType');
-  const vehicleType = vehicleTypeSelect ? vehicleTypeSelect.value : null;
+  
+  // Calculate total cargo units from all cargo rows
+  const cargoQuantityInputs = document.querySelectorAll('input[name="cargoQuantity[]"]');
+  const cargoTypeSelects = document.querySelectorAll('select[name="cargoType[]"]');
+  let totalCargoUnits = 0;
+  
+  cargoTypeSelects.forEach((select, index) => {
+    if (select.value) {
+      const qtyInput = cargoQuantityInputs[index];
+      const qty = qtyInput ? parseInt(qtyInput.value) || 0 : 0;
+      totalCargoUnits += qty;
+    }
+  });
 
   if (!pickupAddress || !dropoffAddress) {
     return;
@@ -660,7 +690,7 @@ async function refreshDistanceAndPrice() {
     if (typeof distanceKm === 'number') {
       logivexLastDistanceKm = distanceKm;
       updateDistanceDisplay(distanceKm);
-      updatePriceEstimate(distanceKm, vehicleType);
+      updatePriceEstimate(distanceKm, totalCargoUnits);
       updateQuoteSummary();
     }
   } catch (err) {
@@ -684,18 +714,19 @@ function updateDistanceDisplay(distanceKm) {
   }
 }
 
-function updatePriceEstimate(distanceKm, vehicleType) {
+function updatePriceEstimate(distanceKm, totalCargoUnits) {
   const priceEl = document.getElementById('price-estimate');
   const summaryPriceEl = document.getElementById('summary-price');
   if (!priceEl && !summaryPriceEl) return;
 
-  if (!vehicleType || typeof distanceKm !== 'number') {
+  const units = parseInt(totalCargoUnits) || 0;
+  if (units === 0 || typeof distanceKm !== 'number') {
     if (priceEl) priceEl.textContent = '–';
     if (summaryPriceEl) summaryPriceEl.textContent = '–';
     return;
   }
 
-  const price = calculateTransportPriceClient(distanceKm, vehicleType);
+  const price = calculateTransportPriceClient(distanceKm, units);
   const formatted = price != null ? `€${price.toLocaleString(undefined, { minimumFractionDigits: 0 })}` : '–';
 
   if (priceEl) priceEl.textContent = formatted;
@@ -704,8 +735,7 @@ function updatePriceEstimate(distanceKm, vehicleType) {
 
 function updateQuoteSummary() {
   const routeEl = document.getElementById('summary-route');
-  const vehicleEl = document.getElementById('summary-vehicle');
-  const weightEl = document.getElementById('summary-weight');
+  const cargoEl = document.getElementById('summary-cargo');
 
   if (routeEl) {
     const from = logivexPickupPlace?.formattedAddress || '–';
@@ -713,29 +743,137 @@ function updateQuoteSummary() {
     routeEl.textContent = from !== '–' && to !== '–' ? `${from} → ${to}` : '–';
   }
 
-  if (vehicleEl) {
-    const vehicleTypeSelect = document.getElementById('vehicleType');
-    const vehicle =
-      vehicleTypeSelect && vehicleTypeSelect.options[vehicleTypeSelect.selectedIndex]
-        ? vehicleTypeSelect.options[vehicleTypeSelect.selectedIndex].textContent
-        : '–';
-    vehicleEl.textContent = vehicle || '–';
+  if (cargoEl) {
+    const cargoTypeSelects = document.querySelectorAll('select[name="cargoType[]"]');
+    const cargoQuantityInputs = document.querySelectorAll('input[name="cargoQuantity[]"]');
+    const otherDescription = document.querySelector('input[name="otherCargoDescription"]')?.value;
+    
+    const items = [];
+    cargoTypeSelects.forEach((select, index) => {
+      const type = select.value;
+      const qtyInput = cargoQuantityInputs[index];
+      const qty = qtyInput ? parseInt(qtyInput.value) || 0 : 0;
+      
+      if (type && qty > 0) {
+        let label = `${qty} ${type}`;
+        if (type === 'other' && otherDescription) {
+          label += ` (${otherDescription})`;
+        }
+        items.push(label);
+      }
+    });
+    
+    cargoEl.textContent = items.length > 0 ? items.join(', ') : '–';
   }
+}
 
-  if (weightEl) {
-    const weightInput = document.getElementById('weightKg');
-    const colliInput = document.getElementById('colli');
-    const weight = weightInput && weightInput.value ? `${weightInput.value} kg` : null;
-    const colli = colliInput && colliInput.value ? `${colliInput.value} colli` : null;
+// Cargo management functions
+function initCargoManagement() {
+  const container = document.getElementById('cargo-items-container');
+  const addBtn = document.getElementById('add-cargo-btn');
+  
+  if (!container || !addBtn) return;
 
-    if (weight && colli) {
-      weightEl.textContent = `${weight} • ${colli}`;
-    } else if (weight || colli) {
-      weightEl.textContent = weight || colli;
-    } else {
-      weightEl.textContent = '–';
+  // Add cargo item button
+  addBtn.addEventListener('click', () => {
+    const rowCount = container.querySelectorAll('.cargo-row').length;
+    const newRow = createCargoRow(rowCount);
+    container.appendChild(newRow);
+    updateRemoveButtons();
+    setupCargoRowListeners(newRow);
+  });
+
+  // Setup listeners for initial row
+  const initialRow = container.querySelector('.cargo-row');
+  if (initialRow) {
+    setupCargoRowListeners(initialRow);
+  }
+}
+
+function createCargoRow(index) {
+  const row = document.createElement('div');
+  row.className = 'cargo-row';
+  row.setAttribute('data-row-index', index);
+  
+  row.innerHTML = `
+    <div class="cargo-field">
+      <label>Cargo type</label>
+      <select name="cargoType[]" class="cargo-type-select" required>
+        <option value="">Select type</option>
+        <option value="pallets">Pallets</option>
+        <option value="boxes">Boxes</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div class="cargo-field quantity-field">
+      <label>Quantity</label>
+      <input type="number" name="cargoQuantity[]" min="1" step="1" value="1" required />
+    </div>
+    <button type="button" class="remove-cargo-btn" aria-label="Remove cargo item">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </button>
+  `;
+  
+  return row;
+}
+
+function setupCargoRowListeners(row) {
+  const typeSelect = row.querySelector('.cargo-type-select');
+  const removeBtn = row.querySelector('.remove-cargo-btn');
+  const quantityInput = row.querySelector('input[name="cargoQuantity[]"]');
+  
+  if (typeSelect) {
+    typeSelect.addEventListener('change', () => {
+      updateOtherDescriptionVisibility();
+      refreshDistanceAndPrice();
+    });
+  }
+  
+  if (quantityInput) {
+    quantityInput.addEventListener('input', () => {
+      refreshDistanceAndPrice();
+    });
+  }
+  
+  if (removeBtn) {
+    removeBtn.addEventListener('click', () => {
+      const container = document.getElementById('cargo-items-container');
+      if (container.querySelectorAll('.cargo-row').length > 1) {
+        row.remove();
+        updateRemoveButtons();
+        updateOtherDescriptionVisibility();
+        refreshDistanceAndPrice();
+      }
+    });
+  }
+}
+
+function updateRemoveButtons() {
+  const container = document.getElementById('cargo-items-container');
+  const rows = container.querySelectorAll('.cargo-row');
+  const removeButtons = container.querySelectorAll('.remove-cargo-btn');
+  
+  removeButtons.forEach(btn => {
+    btn.style.display = rows.length > 1 ? 'flex' : 'none';
+  });
+}
+
+function updateOtherDescriptionVisibility() {
+  const container = document.getElementById('cargo-items-container');
+  const otherContainer = document.querySelector('.other-description-container');
+  
+  if (!container || !otherContainer) return;
+  
+  const typeSelects = container.querySelectorAll('.cargo-type-select');
+  let hasOther = false;
+  
+  typeSelects.forEach(select => {
+    if (select.value === 'other') {
+      hasOther = true;
     }
-  }
+  });
+  
+  otherContainer.style.display = hasOther ? 'block' : 'none';
 }
 
 // Load Google Maps API key from backend and initialize the script

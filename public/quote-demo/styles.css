@@ -130,11 +130,13 @@ body {
   background: var(--text-primary);
   color: var(--text-light) !important;
   border-radius: var(--radius-full);
+  text-decoration: none;
   font-weight: 600;
 }
 
 .nav-cta:hover {
   background: var(--accent-blue);
+  text-decoration: none;
 }
 
 .lang-switch {
@@ -495,6 +497,7 @@ textarea {
   align-items: center;
   justify-content: center;
   gap: 8px;
+  text-decoration: none;
   box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
   transition: all 0.3s ease;
   width: 100%;
@@ -504,6 +507,7 @@ textarea {
 .button:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+  text-decoration: none;
 }
 
 .button:active {

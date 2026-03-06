@@ -16,25 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Smooth scroll for buttons with data-scroll-target
-  document.querySelectorAll('[data-scroll-target]').forEach(button => {
-    button.addEventListener('click', function () {
-      const targetId = this.getAttribute('data-scroll-target');
-      const target = document.querySelector(targetId);
-      if (target) {
-        target.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
-        });
-      }
-    });
-  });
-
   const gridEl = document.getElementById('demo-grid');
-  const featuredNameEl = document.getElementById('featured-name');
-  const featuredDescEl = document.getElementById('featured-description');
-  const featuredCatEl = document.getElementById('featured-category');
-  const featuredBtnEl = document.getElementById('featured-button');
   const yearEl = document.getElementById('footer-year');
 
   if (yearEl) {
@@ -52,39 +34,14 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      // Filter only online/beta demos for featured section
-      const availableDemos = demos.filter(d => d.status === 'online' || d.status === 'beta');
-      const featured = availableDemos[0] || demos[0];
-
-      if (featuredNameEl) featuredNameEl.textContent = featured.name;
-      if (featuredDescEl) featuredDescEl.textContent = featured.description;
-      if (featuredCatEl) featuredCatEl.textContent = featured.category || '';
-      if (featuredBtnEl) {
-        featuredBtnEl.onclick = () => {
-          if (featured.url) {
-            window.location.href = featured.url;
-          }
-        };
-      }
-
       if (!gridEl) return;
 
-      demos.forEach((demo, index) => {
+      demos.forEach((demo) => {
         const card = document.createElement('article');
-        // First available card is featured (spans 2 columns)
-        const isFeatured = demo.id === featured.id;
-        card.className = isFeatured ? 'bento-card featured' : 'bento-card';
+        card.className = 'bento-card';
 
         const content = document.createElement('div');
         content.className = 'bento-card-content';
-
-        // Badge (only for featured or special demos)
-        if (isFeatured) {
-          const badge = document.createElement('span');
-          badge.className = 'bento-card-badge';
-          badge.textContent = 'Featured';
-          content.appendChild(badge);
-        }
 
         const title = document.createElement('h3');
         title.textContent = demo.name;
@@ -105,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const button = document.createElement('button');
         button.className = 'bento-btn';
-        button.textContent = demo.status === 'coming_soon' ? 'Soon' : (demo.status === 'offline' ? 'Unavailable' : 'Open demo');
+        button.textContent = demo.status === 'coming_soon' ? 'Soon' : (demo.status === 'offline' ? 'Unavailable' : 'Launch Demo →');
         button.type = 'button';
         button.disabled = demo.status === 'coming_soon' || demo.status === 'offline';
         

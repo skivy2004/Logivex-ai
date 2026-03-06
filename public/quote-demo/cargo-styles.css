@@ -1,0 +1,110 @@
+/* ========================================
+   Cargo Items Section
+   ======================================== */
+
+.cargo-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cargo-section .section-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--form-label);
+}
+
+.cargo-items-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cargo-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.cargo-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cargo-field label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--form-label);
+}
+
+.quantity-field {
+  max-width: 100px;
+}
+
+.remove-cargo-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--form-border);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.remove-cargo-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: var(--error);
+  color: var(--error);
+}
+
+.other-description-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.other-description-container label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--form-label);
+}
+
+.add-cargo-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--accent-blue);
+  background: transparent;
+  border: 1px solid var(--accent-blue);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  align-self: flex-start;
+}
+
+.add-cargo-btn:hover {
+  background: var(--accent-blue);
+  color: white;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 480px) {
+  .cargo-row {
+    grid-template-columns: 1fr 80px auto;
+  }
+  
+  .quantity-field {
+    max-width: 80px;
+  }
+}
