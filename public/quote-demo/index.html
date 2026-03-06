@@ -56,14 +56,13 @@ fetch("/api/config")
               <p data-i18n="form.subtitle">Share your route, shipment details and contact information. We will send your quote by email.</p>
             </header>
 
-            <form id="quote-form" class="form">
+            <form id="quote-form" class="form" novalidate>
               <div class="field">
                 <label for="pickupAddress" data-i18n="form.pickupLabel">Pickup address<span class="required">*</span></label>
                 <input
                   type="text"
                   id="pickupAddress"
                   name="pickupAddress"
-                  required
                   placeholder="e.g. Warehouse A, Berlin"
                   data-i18n-placeholder="form.pickupPlaceholder"
                 />
@@ -75,7 +74,6 @@ fetch("/api/config")
                   type="text"
                   id="dropoffAddress"
                   name="dropoffAddress"
-                  required
                   placeholder="e.g. Distribution Center, Hamburg"
                   data-i18n-placeholder="form.dropoffPlaceholder"
                 />
@@ -93,7 +91,7 @@ fetch("/api/config")
                   <div class="cargo-row" data-row-index="0">
                     <div class="cargo-field">
                       <label>Cargo type</label>
-                      <select name="cargoType[]" class="cargo-type-select" required>
+                      <select name="cargoType[]" class="cargo-type-select">
                         <option value="">Select type</option>
                         <option value="pallets">Pallets</option>
                         <option value="boxes">Boxes</option>
@@ -102,7 +100,7 @@ fetch("/api/config")
                     </div>
                     <div class="cargo-field quantity-field">
                       <label>Quantity</label>
-                      <input type="number" name="cargoQuantity[]" min="1" step="1" value="1" required />
+                      <input type="number" name="cargoQuantity[]" min="1" step="1" value="1" />
                     </div>
                     <button type="button" class="remove-cargo-btn" style="display: none;" aria-label="Remove cargo item">
                       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
@@ -120,7 +118,7 @@ fetch("/api/config")
 
               <div class="field">
                 <label for="date" data-i18n="form.dateLabel">Pickup date<span class="required">*</span></label>
-                <input type="date" id="date" name="date" required />
+                <input type="date" id="date" name="date" />
               </div>
 
               <div class="field field-inline">
@@ -130,7 +128,6 @@ fetch("/api/config")
                     type="text"
                     id="customerName"
                     name="customerName"
-                    required
                     placeholder="e.g. Jane Doe"
                   />
                 </div>
@@ -140,7 +137,6 @@ fetch("/api/config")
                     type="email"
                     id="customerEmail"
                     name="customerEmail"
-                    required
                     placeholder="you@company.com"
                   />
                 </div>

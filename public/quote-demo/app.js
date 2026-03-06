@@ -8,21 +8,20 @@ let logivexDropoffPlace = null;
 const LOGIVEX_PRICING = {
   startFee: 25,
   pricePerKm: 0.9,
-  vehicleFactor: {
-    van: 1.0,
-    'box truck': 1.3,
-    trailer: 1.6,
-    other: 1.2
-  }
+  pricePerCargoUnit: 0.5  // Price per pallet/box/unit
 };
 
-function calculateTransportPriceClient(distanceKm, vehicleType) {
+// Cargo management state
+let cargoRowCounter = 1; // Start at 1 since we have a default row at index 0
+
+function calculateTransportPriceClient(distanceKm, totalCargoUnits) {
   if (typeof distanceKm !== 'number' || !Number.isFinite(distanceKm) || distanceKm < 0) {
     return null;
   }
-  const normalizedType = (vehicleType || '').toString().toLowerCase();
-  const factor = LOGIVEX_PRICING.vehicleFactor[normalizedType] || 1;
-  const price = (LOGIVEX_PRICING.startFee + distanceKm * LOGIVEX_PRICING.pricePerKm) * factor;
+  const units = Math.max(0, parseInt(totalCargoUnits, 10) || 0);
+  const price = LOGIVEX_PRICING.startFee 
+    + (distanceKm * LOGIVEX_PRICING.pricePerKm) 
+    + (units * LOGIVEX_PRICING.pricePerCargoUnit);
   return Number(price.toFixed(2));
 }
 
@@ -286,24 +285,150 @@ document.addEventListener('DOMContentLoaded', () => {
     document.documentElement.lang = 'en';
   }
 
+  // Helper: Check if an element is visible and enabled
+  function isFieldVisibleAndEnabled(input) {
+    if (!input) return false;
+    if (input.disabled) return false;
+    
+    const style = window.getComputedStyle(input);
+    if (style.display === 'none' || style.visibility === 'hidden') return false;
+    
+    // Check parent containers too
+    let parent = input.parentElement;
+    while (parent) {
+      const parentStyle = window.getComputedStyle(parent);
+      if (parentStyle.display === 'none' || parentStyle.visibility === 'hidden') return false;
+      parent = parent.parentElement;
+    }
+    
+    return true;
+  }
+
+  // Helper: Clear all field errors
+  function clearAllFieldErrors() {
+    document.querySelectorAll('.field-error').forEach(el => {
+      el.classList.remove('field-error');
+    });
+    document.querySelectorAll('.cargo-field').forEach(el => {
+      el.classList.remove('field-error');
+    });
+    document.querySelectorAll('.other-description-container').forEach(el => {
+      el.classList.remove('field-error');
+    });
+  }
+
+  // Helper: Validate cargo items
+  function validateCargoItems() {
+    const container = document.getElementById('cargo-items-container');
+    if (!container) return { valid: false, error: 'Cargo items container not found' };
+    
+    const rows = container.querySelectorAll('.cargo-row');
+    if (rows.length === 0) return { valid: false, error: 'At least one cargo item is required' };
+    
+    let hasAnyValidItem = false;
+    let firstErrorField = null;
+    
+    for (const row of rows) {
+      // Skip if row is hidden
+      const rowStyle = window.getComputedStyle(row);
+      if (rowStyle.display === 'none') continue;
+      
+      const typeSelect = row.querySelector('.cargo-type-select');
+      const quantityInput = row.querySelector('input[type="number"]');
+      
+      if (!typeSelect || !quantityInput) continue;
+      
+      // Check if fields are visible and enabled
+      const typeVisible = isFieldVisibleAndEnabled(typeSelect);
+      const quantityVisible = isFieldVisibleAndEnabled(quantityInput);
+      
+      if (!typeVisible || !quantityVisible) continue;
+      
+      const type = typeSelect.value.trim();
+      const quantity = parseInt(quantityInput.value, 10) || 0;
+      
+      if (!type) {
+        typeSelect.closest('.cargo-field').classList.add('field-error');
+        return { valid: false, error: 'Please complete all shipment details.', field: typeSelect };
+      }
+      
+      if (quantity <= 0) {
+        quantityInput.closest('.cargo-field').classList.add('field-error');
+        return { valid: false, error: 'Please complete all shipment details.', field: quantityInput };
+      }
+      
+      // Check for "other" description requirement
+      if (type === 'other') {
+        const otherContainer = document.querySelector('.other-description-container');
+        if (otherContainer) {
+          const otherStyle = window.getComputedStyle(otherContainer);
+          if (otherStyle.display !== 'none') {
+            const descInput = otherContainer.querySelector('input[name="otherCargoDescription"]');
+            if (descInput && isFieldVisibleAndEnabled(descInput)) {
+              if (!descInput.value.trim()) {
+                otherContainer.classList.add('field-error');
+                return { valid: false, error: 'Please complete all shipment details.', field: descInput };
+              }
+            }
+          }
+        }
+      }
+      
+      hasAnyValidItem = true;
+    }
+    
+    if (!hasAnyValidItem) {
+      return { valid: false, error: 'Please complete all shipment details.', field: firstErrorField };
+    }
+    
+    return { valid: true };
+  }
+
+  // Helper: Set field error with message
+  function setFieldErrorWithMessage(inputEl, message) {
+    setFieldError(inputEl);
+    setMessage(message, 'error');
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
     setMessage('', null);
+    clearAllFieldErrors();
 
     const formData = new FormData(form);
     const pickupAddress = formData.get('pickupAddress')?.toString().trim();
     const dropoffAddress = formData.get('dropoffAddress')?.toString().trim();
+    const pickupDateInput = document.getElementById('date');
+    const nameInput = document.getElementById('customerName');
+    const emailInput = document.getElementById('customerEmail');
 
-    const vehicleType = formData.get('vehicleType');
+    // Debug: log all validation values before any checks
+    console.log('pickup:', pickupInput?.value);
+    console.log('dropoff:', dropoffInput?.value);
+    console.log('pickupDate:', pickupDateInput?.value);
+    console.log('name:', nameInput?.value);
+    console.log('email:', emailInput?.value);
+    const container = document.getElementById('cargo-items-container');
+    if (container) {
+      container.querySelectorAll('.cargo-row').forEach((row, i) => {
+        const typeSelect = row.querySelector('.cargo-type-select');
+        const quantityInput = row.querySelector('input[type="number"]');
+        const descInput = document.querySelector('input[name="otherCargoDescription"]');
+        console.log('cargo row:', i, typeSelect?.value, quantityInput?.value, descInput?.value);
+      });
+    }
+
+    // Collect all cargo items from the form
+    const cargoItems = collectCargoItems();
+    const totalCargoUnits = cargoItems.reduce((sum, item) => sum + item.quantity, 0);
 
     const payload = {
       pickupAddress,
       dropoffAddress,
       date: formData.get('date'),
-      vehicleType,
-      weightKg: formData.get('weightKg')?.toString().trim(),
-      colli: formData.get('colli')?.toString().trim(),
-      cargoType: formData.get('cargoType')?.toString().trim(),
+      cargoItems,
+      totalCargoUnits,
+      otherCargoDescription: formData.get('otherCargoDescription')?.toString().trim() || null,
       customerName: formData.get('customerName')?.toString().trim(),
       customerEmail: formData.get('customerEmail')?.toString().trim(),
       notes: formData.get('notes')?.toString().trim(),
@@ -315,28 +440,62 @@ document.addEventListener('DOMContentLoaded', () => {
       calculatedPrice: null
     };
 
-    clearFieldError(pickupInput);
-    clearFieldError(dropoffInput);
-
-    if (!payload.pickupAddress || !payload.dropoffAddress) {
-      setMessage('Please fill in all required fields.', 'error');
-      if (!payload.pickupAddress) setFieldError(pickupInput);
-      if (!payload.dropoffAddress) setFieldError(dropoffInput);
+    // Validate addresses (non-empty; manual entry or Google Places; only if visible)
+    const dateInput = document.getElementById('date');
+    if (isFieldVisibleAndEnabled(pickupInput) && !payload.pickupAddress) {
+      console.log('VALIDATION FAILED: pickupAddress');
+      setMessage('Please complete all shipment details.', 'error');
+      setFieldError(pickupInput);
+      pickupInput.focus();
+      return;
+    }
+    if (isFieldVisibleAndEnabled(dropoffInput) && !payload.dropoffAddress) {
+      console.log('VALIDATION FAILED: dropoffAddress');
+      setMessage('Please complete all shipment details.', 'error');
+      setFieldError(dropoffInput);
+      dropoffInput.focus();
       return;
     }
 
-    // Enforce that both addresses come from a valid Google place with
-    // house number and are inside Europe.
-    if (!validateAddressPlace(logivexPickupPlace, pickupInput)) {
-      return;
-    }
-    if (!validateAddressPlace(logivexDropoffPlace, dropoffInput)) {
+    // Validate date (only if visible)
+    if (isFieldVisibleAndEnabled(pickupDateInput) && !payload.date) {
+      console.log('VALIDATION FAILED: date');
+      setMessage('Please complete all shipment details.', 'error');
+      setFieldError(pickupDateInput);
+      pickupDateInput.focus();
       return;
     }
 
-    if (!payload.date || !payload.vehicleType || !payload.customerName || !payload.customerEmail) {
-      setMessage('Please fill in all required fields.', 'error');
+    // Validate cargo items (at least one row; type, quantity, description if other)
+    const cargoValidation = validateCargoItems();
+    if (!cargoValidation.valid) {
+      console.log('VALIDATION FAILED: cargo', cargoValidation.error);
+      setMessage(cargoValidation.error || 'Please complete all shipment details.', 'error');
+      if (cargoValidation.field) {
+        cargoValidation.field.focus();
+      }
       return;
+    }
+
+    // Validate customer name (only if visible)
+    if (isFieldVisibleAndEnabled(nameInput) && !payload.customerName) {
+      console.log('VALIDATION FAILED: customerName');
+      setMessage('Please complete all shipment details.', 'error');
+      setFieldError(nameInput);
+      nameInput.focus();
+      return;
+    }
+
+    // Validate customer email (only if visible) — simple check: must contain @
+    if (isFieldVisibleAndEnabled(emailInput)) {
+      const emailVal = (emailInput.value || '').trim();
+      if (!emailVal || !emailVal.includes('@')) {
+        console.log('VALIDATION FAILED: customerEmail');
+        setMessage('Please complete all shipment details.', 'error');
+        setFieldError(emailInput);
+        emailInput.focus();
+        return;
+      }
     }
 
     // Try to calculate distance and price before submitting, if the
@@ -348,7 +507,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       if (typeof logivexLastDistanceKm === 'number') {
         payload.distanceKm = logivexLastDistanceKm;
-        const price = calculateTransportPriceClient(logivexLastDistanceKm, vehicleType);
+        const price = calculateTransportPriceClient(logivexLastDistanceKm, totalCargoUnits);
         if (price != null) {
           payload.calculatedPrice = price;
         }
@@ -357,6 +516,9 @@ document.addEventListener('DOMContentLoaded', () => {
       console.warn('Unable to calculate distance/price automatically:', err);
     }
 
+    // Set loading state
+    const buttonLabel = submitButton.querySelector('.button-label');
+    if (buttonLabel) buttonLabel.textContent = 'Calculating quote…';
     submitButton.disabled = true;
     submitButton.classList.add('loading');
 
@@ -379,6 +541,10 @@ document.addEventListener('DOMContentLoaded', () => {
         form.reset();
         logivexPickupPlace = null;
         logivexDropoffPlace = null;
+        // Reset cargo management
+        cargoRowCounter = 1;
+        updateRemoveButtons();
+        updateOtherDescriptionVisibility();
       } else {
         setMessage(
           data.message || 'There was a problem sending your quote. Please try again, or contact us directly.',
@@ -389,14 +555,19 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error('Error submitting quote:', error);
       setMessage('Network error. Please check your connection and try again.', 'error');
     } finally {
+      // Restore button state
       submitButton.disabled = false;
       submitButton.classList.remove('loading');
+      if (buttonLabel) buttonLabel.textContent = 'Send quote request';
     }
   }
 
   if (form) {
     form.addEventListener('submit', handleSubmit);
   }
+
+  // Initialize cargo management
+  initCargoManagement();
 });
 
 // Called by the Google Maps script via the `callback` parameter.
@@ -609,8 +780,7 @@ function clearFieldError(inputEl) {
 async function refreshDistanceAndPrice() {
   const pickupAddress = logivexPickupPlace?.formattedAddress;
   const dropoffAddress = logivexDropoffPlace?.formattedAddress;
-  const vehicleTypeSelect = document.getElementById('vehicleType');
-  const vehicleType = vehicleTypeSelect ? vehicleTypeSelect.value : null;
+  const totalCargoUnits = calculateTotalCargoUnits();
 
   if (!pickupAddress || !dropoffAddress) {
     return;
@@ -621,7 +791,7 @@ async function refreshDistanceAndPrice() {
     if (typeof distanceKm === 'number') {
       logivexLastDistanceKm = distanceKm;
       updateDistanceDisplay(distanceKm);
-      updatePriceEstimate(distanceKm, vehicleType);
+      updatePriceEstimate(distanceKm, totalCargoUnits);
       updateQuoteSummary();
     }
   } catch (err) {
@@ -645,18 +815,19 @@ function updateDistanceDisplay(distanceKm) {
   }
 }
 
-function updatePriceEstimate(distanceKm, vehicleType) {
+function updatePriceEstimate(distanceKm, totalCargoUnits) {
   const priceEl = document.getElementById('price-estimate');
   const summaryPriceEl = document.getElementById('summary-price');
   if (!priceEl && !summaryPriceEl) return;
 
-  if (!vehicleType || typeof distanceKm !== 'number') {
+  const units = parseInt(totalCargoUnits, 10) || 0;
+  if (units === 0 || typeof distanceKm !== 'number') {
     if (priceEl) priceEl.textContent = '–';
     if (summaryPriceEl) summaryPriceEl.textContent = '–';
     return;
   }
 
-  const price = calculateTransportPriceClient(distanceKm, vehicleType);
+  const price = calculateTransportPriceClient(distanceKm, units);
   const formatted = price != null ? `€${price.toLocaleString(undefined, { minimumFractionDigits: 0 })}` : '–';
 
   if (priceEl) priceEl.textContent = formatted;
@@ -665,8 +836,7 @@ function updatePriceEstimate(distanceKm, vehicleType) {
 
 function updateQuoteSummary() {
   const routeEl = document.getElementById('summary-route');
-  const vehicleEl = document.getElementById('summary-vehicle');
-  const weightEl = document.getElementById('summary-weight');
+  const cargoEl = document.getElementById('summary-cargo');
 
   if (routeEl) {
     const from = logivexPickupPlace?.formattedAddress || '–';
@@ -674,29 +844,183 @@ function updateQuoteSummary() {
     routeEl.textContent = from !== '–' && to !== '–' ? `${from} → ${to}` : '–';
   }
 
-  if (vehicleEl) {
-    const vehicleTypeSelect = document.getElementById('vehicleType');
-    const vehicle =
-      vehicleTypeSelect && vehicleTypeSelect.options[vehicleTypeSelect.selectedIndex]
-        ? vehicleTypeSelect.options[vehicleTypeSelect.selectedIndex].textContent
-        : '–';
-    vehicleEl.textContent = vehicle || '–';
-  }
-
-  if (weightEl) {
-    const weightInput = document.getElementById('weightKg');
-    const colliInput = document.getElementById('colli');
-    const weight = weightInput && weightInput.value ? `${weightInput.value} kg` : null;
-    const colli = colliInput && colliInput.value ? `${colliInput.value} colli` : null;
-
-    if (weight && colli) {
-      weightEl.textContent = `${weight} • ${colli}`;
-    } else if (weight || colli) {
-      weightEl.textContent = weight || colli;
+  if (cargoEl) {
+    const cargoItems = collectCargoItems();
+    if (cargoItems.length === 0) {
+      cargoEl.textContent = '–';
     } else {
-      weightEl.textContent = '–';
+      const summary = cargoItems.map(item => {
+        if (item.type === 'other' && item.description) {
+          return `${item.quantity} ${item.type} (${item.description})`;
+        }
+        return `${item.quantity} ${item.type}`;
+      }).join(', ');
+      cargoEl.textContent = summary;
     }
   }
+}
+
+// ========================================
+// Cargo Management Functions
+// ========================================
+
+function initCargoManagement() {
+  const addBtn = document.getElementById('add-cargo-btn');
+  const container = document.getElementById('cargo-items-container');
+
+  if (addBtn) {
+    addBtn.addEventListener('click', addCargoRow);
+  }
+
+  // Set up listeners for the initial row
+  if (container) {
+    const initialRow = container.querySelector('.cargo-row');
+    if (initialRow) {
+      setupCargoRowListeners(initialRow);
+    }
+  }
+}
+
+function addCargoRow() {
+  const container = document.getElementById('cargo-items-container');
+  if (!container) return;
+
+  const newRow = document.createElement('div');
+  newRow.className = 'cargo-row';
+  newRow.setAttribute('data-row-index', cargoRowCounter++);
+  newRow.innerHTML = `
+    <div class="cargo-field">
+      <label>Cargo type</label>
+      <select name="cargoType[]" class="cargo-type-select">
+        <option value="">Select type</option>
+        <option value="pallets">Pallets</option>
+        <option value="boxes">Boxes</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div class="cargo-field quantity-field">
+      <label>Quantity</label>
+      <input type="number" name="cargoQuantity[]" min="1" step="1" value="1" />
+    </div>
+    <button type="button" class="remove-cargo-btn" aria-label="Remove cargo item">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </button>
+  `;
+
+  container.appendChild(newRow);
+  setupCargoRowListeners(newRow);
+  updateRemoveButtons();
+  updateOtherDescriptionVisibility();
+  refreshDistanceAndPrice();
+}
+
+function removeCargoRow(row) {
+  const container = document.getElementById('cargo-items-container');
+  if (!container) return;
+
+  const rows = container.querySelectorAll('.cargo-row');
+  if (rows.length <= 1) {
+    // Don't remove the last row
+    return;
+  }
+
+  row.remove();
+  updateRemoveButtons();
+  updateOtherDescriptionVisibility();
+  refreshDistanceAndPrice();
+}
+
+function setupCargoRowListeners(row) {
+  const removeBtn = row.querySelector('.remove-cargo-btn');
+  const typeSelect = row.querySelector('.cargo-type-select');
+  const quantityInput = row.querySelector('input[type="number"]');
+
+  if (removeBtn) {
+    removeBtn.addEventListener('click', () => removeCargoRow(row));
+  }
+
+  if (typeSelect) {
+    typeSelect.addEventListener('change', () => {
+      updateOtherDescriptionVisibility();
+      updateQuoteSummary();
+    });
+  }
+
+  if (quantityInput) {
+    quantityInput.addEventListener('input', () => {
+      refreshDistanceAndPrice();
+      updateQuoteSummary();
+    });
+  }
+}
+
+function updateRemoveButtons() {
+  const container = document.getElementById('cargo-items-container');
+  if (!container) return;
+
+  const rows = container.querySelectorAll('.cargo-row');
+  const showRemove = rows.length > 1;
+
+  rows.forEach(row => {
+    const removeBtn = row.querySelector('.remove-cargo-btn');
+    if (removeBtn) {
+      removeBtn.style.display = showRemove ? 'flex' : 'none';
+    }
+  });
+}
+
+function updateOtherDescriptionVisibility() {
+  const container = document.getElementById('cargo-items-container');
+  const otherContainer = document.querySelector('.other-description-container');
+  if (!container || !otherContainer) return;
+
+  const rows = container.querySelectorAll('.cargo-row');
+  let hasOther = false;
+
+  rows.forEach(row => {
+    const typeSelect = row.querySelector('.cargo-type-select');
+    if (typeSelect && typeSelect.value === 'other') {
+      hasOther = true;
+    }
+  });
+
+  otherContainer.style.display = hasOther ? 'block' : 'none';
+}
+
+function collectCargoItems() {
+  const container = document.getElementById('cargo-items-container');
+  if (!container) return [];
+
+  const rows = container.querySelectorAll('.cargo-row');
+  const items = [];
+
+  rows.forEach(row => {
+    const typeSelect = row.querySelector('.cargo-type-select');
+    const quantityInput = row.querySelector('input[type="number"]');
+
+    if (typeSelect && quantityInput) {
+      const type = typeSelect.value;
+      const quantity = parseInt(quantityInput.value, 10) || 0;
+
+      if (type && quantity > 0) {
+        const item = { type, quantity };
+        if (type === 'other') {
+          const descInput = document.querySelector('input[name="otherCargoDescription"]');
+          if (descInput && descInput.value.trim()) {
+            item.description = descInput.value.trim();
+          }
+        }
+        items.push(item);
+      }
+    }
+  });
+
+  return items;
+}
+
+function calculateTotalCargoUnits() {
+  const items = collectCargoItems();
+  return items.reduce((sum, item) => sum + item.quantity, 0);
 }
 
 // Apply translations based on data-i18n attributes.

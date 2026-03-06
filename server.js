@@ -7,6 +7,7 @@ const http = require('http');
 const { calculateTransportPrice } = require('./pricing');
 const { demos } = require('./demos');
 const { validateEnvironment, getConfig } = require('./config/env');
+const { optimizeRoutes, evaluateRoute, findMatchingCarriers, generateRecommendations, MOCK_CARRIERS } = require('./routing');
 
 // Validate environment variables on startup
 validateEnvironment();
@@ -30,6 +31,10 @@ app.get('/quote-demo', (req, res) => {
 
 app.get('/extract-order-demo', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'extract-order-demo', 'index.html'));
+});
+
+app.get('/routing-demo', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'routing-demo', 'index.html'));
 });
 
 app.get('/api/demos', (req, res) => {
@@ -58,6 +63,10 @@ app.post('/api/quote', (req, res) => {
     weightKg,
     colli,
     cargoType,
+    cargoItems,
+    totalCargoUnits,
+    otherCargoDescription,
+    calculatedPrice: clientCalculatedPrice,
     distanceKm,
     pickupLat,
     pickupLng,
@@ -65,12 +74,16 @@ app.post('/api/quote', (req, res) => {
     dropoffLng
   } = req.body || {};
 
-  if (!pickupAddress || !dropoffAddress || !date || !vehicleType || !customerName || !customerEmail) {
-    return res.status(400).json({ success: false, message: 'Please fill in all required fields.' });
+  // Validate required fields (no vehicle, weight, colli — quote-demo uses cargo items)
+  if (!pickupAddress || !dropoffAddress || !date || !customerName || !customerEmail) {
+    return res.status(400).json({ success: false, message: 'Please complete all shipment details.' });
   }
 
-  // Calculate price centrally so any changes to pricing rules only
-  // require updates in pricing.js.
+  const hasCargoItems = Array.isArray(cargoItems) && cargoItems.length > 0;
+  if (!hasCargoItems) {
+    return res.status(400).json({ success: false, message: 'Please add at least one cargo item.' });
+  }
+
   const normalizedDistanceKm =
     typeof distanceKm === 'number' && Number.isFinite(distanceKm) && distanceKm >= 0
       ? Math.round(distanceKm)
@@ -79,7 +92,11 @@ app.post('/api/quote', (req, res) => {
   const distanceLabel = normalizedDistanceKm !== null ? `${normalizedDistanceKm} km` : null;
 
   const calculatedPrice =
-    normalizedDistanceKm != null ? calculateTransportPrice(normalizedDistanceKm, vehicleType) : null;
+    typeof clientCalculatedPrice === 'number' && Number.isFinite(clientCalculatedPrice)
+      ? clientCalculatedPrice
+      : normalizedDistanceKm != null && vehicleType
+        ? calculateTransportPrice(normalizedDistanceKm, vehicleType)
+        : null;
 
   let parsedUrl;
   try {
@@ -92,13 +109,16 @@ app.post('/api/quote', (req, res) => {
     pickupAddress,
     dropoffAddress,
     date,
-    vehicleType,
+    vehicleType: vehicleType || null,
     customerName,
     customerEmail,
     notes: notes || '',
     weightKg: weightKg || null,
     colli: colli || null,
     cargoType: cargoType || null,
+    cargoItems: cargoItems || null,
+    totalCargoUnits: typeof totalCargoUnits === 'number' ? totalCargoUnits : null,
+    otherCargoDescription: otherCargoDescription || null,
     distanceKm: distanceLabel,
     calculatedPrice: typeof calculatedPrice === 'number' ? calculatedPrice : null,
     pickupLat: typeof pickupLat === 'number' ? pickupLat : null,
@@ -268,6 +288,244 @@ Return valid JSON only, no markdown formatting.`
     return res.status(502).json({
       success: false,
       message: 'Error extracting order details. Please try again.'
+    });
+  }
+});
+
+// ============================================================================
+// AI Routing Agent API Endpoints
+// ============================================================================
+
+// POST /api/routing/optimize - Optimize routes for a shipment
+app.post('/api/routing/optimize', async (req, res) => {
+  try {
+    const { 
+      pickupLocation, 
+      deliveryLocation, 
+      pallets, 
+      weightKg, 
+      cargoType, 
+      deadline,
+      options = {}
+    } = req.body || {};
+
+    // Validate required fields
+    if (!pickupLocation || !deliveryLocation || !pallets || !weightKg) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields: pickupLocation, deliveryLocation, pallets, weightKg'
+      });
+    }
+
+    // Validate location objects
+    if (!pickupLocation.lat || !pickupLocation.lng || !pickupLocation.city) {
+      return res.status(400).json({
+        success: false,
+        message: 'pickupLocation must include lat, lng, and city'
+      });
+    }
+
+    if (!deliveryLocation.lat || !deliveryLocation.lng || !deliveryLocation.city) {
+      return res.status(400).json({
+        success: false,
+        message: 'deliveryLocation must include lat, lng, and city'
+      });
+    }
+
+    const shipment = {
+      pickupLocation,
+      deliveryLocation,
+      pallets: parseInt(pallets, 10),
+      weightKg: parseInt(weightKg, 10),
+      cargoType: cargoType || 'general',
+      deadline: deadline || null
+    };
+
+    // Get optimized routes
+    const optimizationResult = await optimizeRoutes(shipment);
+
+    // Generate AI recommendations
+    const openaiApiKey = process.env.OPENAI_API_KEY;
+    const recommendations = await generateRecommendations(optimizationResult, openaiApiKey);
+
+    res.json({
+      success: true,
+      data: {
+        ...optimizationResult,
+        recommendations
+      }
+    });
+
+  } catch (error) {
+    console.error('Error in route optimization:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error optimizing routes. Please try again.'
+    });
+  }
+});
+
+// POST /api/routing/evaluate - Evaluate a specific route
+app.post('/api/routing/evaluate', (req, res) => {
+  try {
+    const { routeId, routeOptions } = req.body || {};
+
+    if (!routeId || !routeOptions || !Array.isArray(routeOptions)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields: routeId, routeOptions (array)'
+      });
+    }
+
+    const evaluation = evaluateRoute(routeId, routeOptions);
+
+    if (!evaluation) {
+      return res.status(404).json({
+        success: false,
+        message: 'Route not found in provided options'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: evaluation
+    });
+
+  } catch (error) {
+    console.error('Error in route evaluation:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error evaluating route. Please try again.'
+    });
+  }
+});
+
+// POST /api/routing/match-carriers - Find matching carriers for a shipment
+app.post('/api/routing/match-carriers', (req, res) => {
+  try {
+    const { 
+      pickupLocation, 
+      deliveryLocation, 
+      pallets, 
+      weightKg,
+      filters = {}
+    } = req.body || {};
+
+    if (!pickupLocation || !deliveryLocation || !pallets || !weightKg) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields: pickupLocation, deliveryLocation, pallets, weightKg'
+      });
+    }
+
+    const shipment = {
+      pickupLocation,
+      deliveryLocation,
+      pallets: parseInt(pallets, 10),
+      weightKg: parseInt(weightKg, 10)
+    };
+
+    const matchingResult = findMatchingCarriers(shipment, filters);
+
+    res.json({
+      success: true,
+      data: matchingResult
+    });
+
+  } catch (error) {
+    console.error('Error in carrier matching:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error matching carriers. Please try again.'
+    });
+  }
+});
+
+// GET /api/routing/carriers - List all available carriers
+app.get('/api/routing/carriers', (req, res) => {
+  try {
+    const { country, vehicleType, minRating } = req.query;
+    
+    let carriers = MOCK_CARRIERS.map(c => ({
+      id: c.id,
+      name: c.name,
+      location: c.location,
+      capacity: c.capacity,
+      vehicleTypes: c.vehicleTypes,
+      operatingCountries: c.operatingCountries,
+      rating: c.rating,
+      completedShipments: c.completedShipments,
+      availability: c.availability,
+      baseRate: c.baseRate
+    }));
+
+    // Apply filters if provided
+    if (country) {
+      carriers = carriers.filter(c => c.operatingCountries.includes(country.toUpperCase()));
+    }
+    
+    if (vehicleType) {
+      carriers = carriers.filter(c => c.vehicleTypes.includes(vehicleType.toLowerCase()));
+    }
+    
+    if (minRating) {
+      const minRatingNum = parseFloat(minRating);
+      carriers = carriers.filter(c => c.rating >= minRatingNum);
+    }
+
+    res.json({
+      success: true,
+      data: {
+        carriers,
+        total: carriers.length,
+        timestamp: new Date().toISOString()
+      }
+    });
+
+  } catch (error) {
+    console.error('Error fetching carriers:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching carriers. Please try again.'
+    });
+  }
+});
+
+// GET /api/routing/carriers/:id - Get specific carrier details
+app.get('/api/routing/carriers/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const carrier = MOCK_CARRIERS.find(c => c.id === id);
+    
+    if (!carrier) {
+      return res.status(404).json({
+        success: false,
+        message: 'Carrier not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        id: carrier.id,
+        name: carrier.name,
+        location: carrier.location,
+        capacity: carrier.capacity,
+        vehicleTypes: carrier.vehicleTypes,
+        operatingCountries: carrier.operatingCountries,
+        rating: carrier.rating,
+        completedShipments: carrier.completedShipments,
+        baseRate: carrier.baseRate,
+        availability: carrier.availability
+      }
+    });
+
+  } catch (error) {
+    console.error('Error fetching carrier:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching carrier details. Please try again.'
     });
   }
 });

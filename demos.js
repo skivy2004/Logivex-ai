@@ -12,6 +12,14 @@ const demos = [
     status: 'online'
   },
   {
+    id: 'ai-routing',
+    name: 'AI Routing Agent',
+    description: 'AI-powered route optimization with carrier matching, scoring, and intelligent recommendations.',
+    url: '/routing-demo',
+    category: 'AI Automation',
+    status: 'beta'
+  },
+  {
     id: 'extract-order',
     name: 'Email → Order AI',
     description: 'Upload or paste a transport request email and let AI extract shipment details automatically.',

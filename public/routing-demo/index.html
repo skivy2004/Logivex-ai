@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Routing Agent | Logivex</title>
+  <link rel="stylesheet" href="../demo-hub.css">
+  <style>
+    :root {
+      --primary-gradient: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      --success-color: #22c55e;
+      --warning-color: #f59e0b;
+      --info-color: #3b82f6;
+    }
+
+    .demo-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    .demo-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .demo-header h1 {
+      font-size: 2.5rem;
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 16px;
+    }
+
+    .demo-header p {
+      color: var(--text-secondary);
+      font-size: 1.125rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .input-section {
+      background: white;
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 32px;
+    }
+
+    .input-section h2 {
+      font-size: 1.5rem;
+      margin-bottom: 24px;
+      color: var(--text-primary);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 768px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-group label {
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+
+    .form-group input,
+    .form-group select {
+      padding: 12px 16px;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: var(--radius-md);
+      font-size: 1rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 768px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .optimize-btn {
+      background: var(--primary-gradient);
+      color: white;
+      border: none;
+      padding: 16px 32px;
+      border-radius: var(--radius-full);
+      font-size: 1.125rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .optimize-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+    }
+
+    .optimize-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .results-section {
+      display: none;
+    }
+
+    .results-section.active {
+      display: block;
+    }
+
+    .recommendations-bar {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+
+    .recommendations-bar h3 {
+      font-size: 1.125rem;
+      margin-bottom: 16px;
+      color: var(--text-primary);
+    }
+
+    .recommendation-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .recommendation-pill {
+      background: white;
+      padding: 8px 16px;
+      border-radius: var(--radius-full);
+      font-size: 0.875rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .recommendation-pill.best-value {
+      border-left: 3px solid var(--success-color);
+    }
+
+    .recommendation-pill.fastest {
+      border-left: 3px solid var(--info-color);
+    }
+
+    .recommendation-pill.reliable {
+      border-left: 3px solid var(--warning-color);
+    }
+
+    .routes-grid {
+      display: grid;
+      gap: 20px;
+    }
+
+    .route-card {
+      background: white;
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+      border: 2px solid transparent;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      position: relative;
+    }
+
+    .route-card:hover {
+      border-color: rgba(59, 130, 246, 0.3);
+      box-shadow: var(--shadow-glow);
+    }
+
+    .route-card.top-ranked {
+      border-color: #3b82f6;
+    }
+
+    .route-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .carrier-info h3 {
+      font-size: 1.25rem;
+      margin-bottom: 4px;
+    }
+
+    .carrier-meta {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+    }
+
+    .route-rank {
+      background: var(--primary-gradient);
+      color: white;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+    }
+
+    .route-details {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      padding: 16px 0;
+      border-top: 1px solid rgba(0, 0, 0, 0.05);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 768px) {
+      .route-details {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .detail-item {
+      text-align: center;
+    }
+
+    .detail-label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+
+    .detail-value {
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .detail-value.price {
+      color: #22c55e;
+    }
+
+    .score-section {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .score-circle {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+      border: 3px solid #3b82f6;
+    }
+
+    .score-value {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #3b82f6;
+    }
+
+    .score-label {
+      font-size: 0.625rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+    }
+
+    .score-breakdown {
+      flex: 1;
+    }
+
+    .score-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .score-bar-label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      width: 80px;
+    }
+
+    .score-bar-track {
+      flex: 1;
+      height: 6px;
+      background: rgba(0, 0, 0, 0.05);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .score-bar-fill {
+      height: 100%;
+      background: var(--primary-gradient);
+      border-radius: 3px;
+      transition: width 0.5s ease;
+    }
+
+    .route-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border-radius: var(--radius-full);
+      font-weight: 600;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+    }
+
+    .btn-primary {
+      background: var(--primary-gradient);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-secondary {
+      background: rgba(0, 0, 0, 0.05);
+      color: var(--text-primary);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(0, 0, 0, 0.1);
+    }
+
+    .error-message {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #dc2626;
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      margin-top: 16px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-secondary);
+    }
+
+    .empty-state-icon {
+      font-size: 4rem;
+      margin-bottom: 16px;
+    }
+
+    .carrier-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      background: rgba(34, 197, 94, 0.1);
+      color: #16a34a;
+      border-radius: var(--radius-full);
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .carrier-badge::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: #22c55e;
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="/" style="display: flex; align-items: center; text-decoration: none;">
+        <div class="logo-mark">Lx</div>
+        <div class="logo-text">Logivex</div>
+      </a>
+      <nav class="main-nav">
+        <a href="/">Home</a>
+        <a href="/#demos">Demos</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="demo-container">
+    <div class="demo-header">
+      <h1>AI Routing Agent</h1>
+      <p>Intelligent route optimization with carrier matching, multi-factor scoring, and AI-powered recommendations for your shipments.</p>
+    </div>
+
+    <section class="input-section">
+      <h2>Shipment Details</h2>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Pickup City</label>
+          <input type="text" id="pickupCity" placeholder="e.g., Berlin" value="Berlin">
+        </div>
+        <div class="form-group">
+          <label>Delivery City</label>
+          <input type="text" id="deliveryCity" placeholder="e.g., Milan" value="Milan">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Pallets</label>
+          <input type="number" id="pallets" placeholder="10" value="10" min="1">
+        </div>
+        <div class="form-group">
+          <label>Weight (kg)</label>
+          <input type="number" id="weight" placeholder="8000" value="8000" min="1">
+        </div>
+        <div class="form-group">
+          <label>Cargo Type</label>
+          <select id="cargoType">
+            <option value="general">General Cargo</option>
+            <option value="perishable">Perishable</option>
+            <option value="fragile">Fragile</option>
+            <option value="hazmat">Hazardous</option>
+          </select>
+        </div>
+      </div>
+      <button class="optimize-btn" id="optimizeBtn" onclick="optimizeRoutes()">
+        <span>Find Optimal Routes</span>
+      </button>
+      <div id="errorMessage"></div>
+    </section>
+
+    <section class="results-section" id="resultsSection">
+      <div class="recommendations-bar" id="recommendationsBar" style="display: none;">
+        <h3>AI Recommendations</h3>
+        <div class="recommendation-pills" id="recommendationPills"></div>
+      </div>
+
+      <div class="routes-grid" id="routesGrid"></div>
+    </section>
+  </main>
+
+  <script>
+    // City coordinates database
+    const cityCoordinates = {
+      'berlin': { lat: 52.52, lng: 13.405, country: 'DE' },
+      'hamburg': { lat: 53.5511, lng: 9.9937, country: 'DE' },
+      'munich': { lat: 48.1351, lng: 11.582, country: 'DE' },
+      'cologne': { lat: 50.9375, lng: 6.9603, country: 'DE' },
+      'frankfurt': { lat: 50.1109, lng: 8.6821, country: 'DE' },
+      'amsterdam': { lat: 52.3676, lng: 4.9041, country: 'NL' },
+      'rotterdam': { lat: 51.9244, lng: 4.4777, country: 'NL' },
+      'paris': { lat: 48.8566, lng: 2.3522, country: 'FR' },
+      'lyon': { lat: 45.764, lng: 4.8357, country: 'FR' },
+      'milan': { lat: 45.4642, lng: 9.19, country: 'IT' },
+      'rome': { lat: 41.9028, lng: 12.4964, country: 'IT' },
+      'brussels': { lat: 50.8476, lng: 4.3572, country: 'BE' },
+      'vienna': { lat: 48.2082, lng: 16.3738, country: 'AT' },
+      'prague': { lat: 50.0755, lng: 14.4378, country: 'CZ' },
+      'warsaw': { lat: 52.2297, lng: 21.0122, country: 'PL' },
+      'stockholm': { lat: 59.3293, lng: 18.0686, country: 'SE' },
+      'copenhagen': { lat: 55.6761, lng: 12.5683, country: 'DK' },
+      'barcelona': { lat: 41.3851, lng: 2.1734, country: 'ES' },
+      'madrid': { lat: 40.4168, lng: -3.7038, country: 'ES' },
+      'zurich': { lat: 47.3769, lng: 8.5417, country: 'CH' }
+    };
+
+    async function optimizeRoutes() {
+      const btn = document.getElementById('optimizeBtn');
+      const errorDiv = document.getElementById('errorMessage');
+      const resultsSection = document.getElementById('resultsSection');
+      
+      // Reset
+      errorDiv.innerHTML = '';
+      
+      // Get values
+      const pickupCity = document.getElementById('pickupCity').value.trim().toLowerCase();
+      const deliveryCity = document.getElementById('deliveryCity').value.trim().toLowerCase();
+      const pallets = parseInt(document.getElementById('pallets').value);
+      const weight = parseInt(document.getElementById('weight').value);
+      const cargoType = document.getElementById('cargoType').value;
+
+      // Validate
+      if (!pickupCity || !deliveryCity || !pallets || !weight) {
+        errorDiv.innerHTML = '<div class="error-message">Please fill in all fields.</div>';
+        return;
+      }
+
+      if (!cityCoordinates[pickupCity] || !cityCoordinates[deliveryCity]) {
+        errorDiv.innerHTML = '<div class="error-message">City not found. Try: Berlin, Milan, Amsterdam, Paris, etc.</div>';
+        return;
+      }
+
+      // Show loading
+      btn.disabled = true;
+      btn.innerHTML = '<div class="spinner"></div><span>Optimizing...</span>';
+
+      try {
+        const response = await fetch('/api/routing/optimize', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            pickupLocation: {
+              ...cityCoordinates[pickupCity],
+              city: pickupCity.charAt(0).toUpperCase() + pickupCity.slice(1)
+            },
+            deliveryLocation: {
+              ...cityCoordinates[deliveryCity],
+              city: deliveryCity.charAt(0).toUpperCase() + deliveryCity.slice(1)
+            },
+            pallets,
+            weightKg: weight,
+            cargoType
+          })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          displayResults(result.data);
+          resultsSection.classList.add('active');
+        } else {
+          errorDiv.innerHTML = `<div class="error-message">${result.message || 'Optimization failed.'}</div>`;
+        }
+      } catch (error) {
+        errorDiv.innerHTML = '<div class="error-message">Network error. Please try again.</div>';
+        console.error('Optimization error:', error);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>Find Optimal Routes</span>';
+      }
+    }
+
+    function displayResults(data) {
+      // Display recommendations
+      const recsBar = document.getElementById('recommendationsBar');
+      const recsPills = document.getElementById('recommendationPills');
+      
+      if (data.recommendations && data.recommendations.length > 0) {
+        recsBar.style.display = 'block';
+        recsPills.innerHTML = data.recommendations.map(rec => {
+          let className = 'recommendation-pill';
+          if (rec.type === 'best_value') className += ' best-value';
+          if (rec.type === 'fastest') className += ' fastest';
+          if (rec.type === 'most_reliable') className += ' reliable';
+          
+          return `<div class="${className}">${rec.title}</div>`;
+        }).join('');
+      } else {
+        recsBar.style.display = 'none';
+      }
+
+      // Display routes
+      const grid = document.getElementById('routesGrid');
+      grid.innerHTML = data.routeOptions.map((route, index) => createRouteCard(route, index)).join('');
+    }
+
+    function createRouteCard(route, index) {
+      const isTop = index === 0;
+      const score = route.matchScore;
+      
+      return `
+        <div class="route-card ${isTop ? 'top-ranked' : ''}">
+          <div class="route-header">
+            <div class="carrier-info">
+              <h3>${route.carrier.name}</h3>
+              <div class="carrier-meta">
+                <span class="carrier-badge">${route.carrier.rating} ★</span>
+                ${route.carrier.completedShipments}+ shipments
+              </div>
+            </div>
+            <div class="route-rank">#${route.matchScore.rank}</div>
+          </div>
+
+          <div class="route-details">
+            <div class="detail-item">
+              <div class="detail-label">Total Distance</div>
+              <div class="detail-value">${route.route.totalDistance} km</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Est. Time</div>
+              <div class="detail-value">${route.timing.estimatedHours}h</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Vehicle</div>
+              <div class="detail-value">${route.vehicle.recommendedType}</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Price</div>
+              <div class="detail-value price">€${route.pricing.estimatedPrice}</div>
+            </div>
+          </div>
+
+          <div class="score-section">
+            <div class="score-circle">
+              <div class="score-value">${score.total}</div>
+              <div class="score-label">Score</div>
+            </div>
+            <div class="score-breakdown">
+              <div class="score-bar">
+                <span class="score-bar-label">Capacity</span>
+                <div class="score-bar-track">
+                  <div class="score-bar-fill" style="width: ${score.breakdown.capacity}%"></div>
+                </div>
+              </div>
+              <div class="score-bar">
+                <span class="score-bar-label">Proximity</span>
+                <div class="score-bar-track">
+                  <div class="score-bar-fill" style="width: ${score.breakdown.proximity}%"></div>
+                </div>
+              </div>
+              <div class="score-bar">
+                <span class="score-bar-label">Coverage</span>
+                <div class="score-bar-track">
+                  <div class="score-bar-fill" style="width: ${score.breakdown.coverage}%"></div>
+                </div>
+              </div>
+              <div class="score-bar">
+                <span class="score-bar-label">Rating</span>
+                <div class="score-bar-track">
+                  <div class="score-bar-fill" style="width: ${score.breakdown.rating}%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="route-actions">
+            <button class="btn btn-primary" onclick="selectRoute('${route.id}')">Select Route</button>
+            <button class="btn btn-secondary" onclick="viewDetails('${route.id}')">View Details</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function selectRoute(routeId) {
+      alert('Route selected: ' + routeId + '\n\nIn a production system, this would proceed to booking and contract generation.');
+    }
+
+    function viewDetails(routeId) {
+      alert('Route details: ' + routeId + '\n\nDetailed evaluation metrics would be shown here including risk assessment, efficiency metrics, and carrier history.');
+    }
+  </script>
+</body>
+</html>
