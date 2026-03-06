@@ -11,6 +11,7 @@ const optionalEnvVars = [
   'MAKE_WEBHOOK_CONTACT_FORM', 
   'MAKE_WEBHOOK_DEMO_REQUEST',
   'MAKE_WEBHOOK_CRM_AI',
+  'OPENAI_API_KEY',
   'PORT'
 ];
 
@@ -61,6 +62,7 @@ function validateEnvironment() {
   console.log(`   - Contact Form Webhook: ${process.env.MAKE_WEBHOOK_CONTACT_FORM ? '✓ Configured' : 'Optional'}`);
   console.log(`   - Demo Request Webhook: ${process.env.MAKE_WEBHOOK_DEMO_REQUEST ? '✓ Configured' : 'Optional'}`);
   console.log(`   - CRM AI Webhook: ${process.env.MAKE_WEBHOOK_CRM_AI ? '✓ Configured' : 'Optional'}`);
+  console.log(`   - OpenAI API: ${process.env.OPENAI_API_KEY ? '✓ Configured' : 'Optional (demo mode)'}`);
   console.log('');
 }
 

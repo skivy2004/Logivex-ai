@@ -22,21 +22,16 @@ fetch("/api/config")
   <body>
     <header class="site-header">
       <div class="container header-inner">
-        <div class="logo-mark">Lx</div>
-        <div class="logo-text">Logivex</div>
-        <nav class="nav-links">
-          <a href="#how-it-works" data-i18n="nav.how">How it works</a>
-          <a href="#trust" data-i18n="nav.why">Why Logivex</a>
-          <a href="#quote" class="nav-cta" data-i18n="nav.cta">Get My Quote</a>
+        <a href="/" style="display: flex; align-items: center; text-decoration: none;">
+          <div class="logo-mark">Lx</div>
+          <div class="logo-text">Logivex</div>
+        </a>
+        <nav class="nav-links" style="margin-left: auto;">
+          <a href="/">Home</a>
+          <a href="/#demos">Demos</a>
+          <a href="/#contact">Contact</a>
         </nav>
-        <div class="lang-switch">
-          <label for="language-select" class="lang-label">Lang</label>
-          <select id="language-select" class="lang-select" aria-label="Select language">
-            <option value="en">EN</option>
-            <option value="nl">NL</option>
-            <option value="de">DE</option>
-          </select>
-        </div>
+        <a href="/quote-demo/" class="nav-cta">Get My Quote</a>
       </div>
     </header>
 

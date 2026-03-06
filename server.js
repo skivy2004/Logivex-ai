@@ -28,6 +28,10 @@ app.get('/quote-demo', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'quote-demo', 'index.html'));
 });
 
+app.get('/extract-order-demo', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'extract-order-demo', 'index.html'));
+});
+
 app.get('/api/demos', (req, res) => {
   res.json({ demos });
 });
@@ -145,6 +149,127 @@ app.post('/api/quote', (req, res) => {
 
   makeReq.write(payload);
   makeReq.end();
+});
+
+// POST /api/extract-order - Extract transport order details from email text using AI
+app.post('/api/extract-order', async (req, res) => {
+  const { email_text } = req.body || {};
+
+  if (!email_text || typeof email_text !== 'string') {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'Please provide email text to extract.' 
+    });
+  }
+
+  // Check if OpenAI API key is configured
+  const openaiApiKey = process.env.OPENAI_API_KEY;
+
+  if (!openaiApiKey) {
+    // Return demo data if OpenAI is not configured
+    console.log('OpenAI API key not configured, returning demo data');
+    
+    // Parse email text for demo purposes (simple pattern matching)
+    const pickupMatch = email_text.match(/(?:pickup|from|departure)[\s:]+([^\n,]+)/i);
+    const deliveryMatch = email_text.match(/(?:delivery|to|destination)[\s:]+([^\n,]+)/i);
+    const palletMatch = email_text.match(/(\d+)\s*(?:pallets?|colli)/i);
+    const weightMatch = email_text.match(/(\d+[\s,]*\d*)\s*(?:kg|kilo)/i);
+    const dateMatch = email_text.match(/(?:tomorrow|today|next week|\d{1,2}[\/\.-]\d{1,2}[\/\.-]\d{2,4})/i);
+
+    return res.json({
+      pickup: pickupMatch ? pickupMatch[1].trim() : 'Rotterdam',
+      delivery: deliveryMatch ? deliveryMatch[1].trim() : 'Milan',
+      pallets: palletMatch ? parseInt(palletMatch[1]) : 12,
+      weight: weightMatch ? `${weightMatch[1].replace(/[\s,]/g, '')} kg` : '4500 kg',
+      pickup_date: dateMatch ? dateMatch[0] : 'Tomorrow',
+      source: 'demo-fallback',
+      note: 'OpenAI API not configured. Using demo extraction.'
+    });
+  }
+
+  try {
+    // Call OpenAI API for extraction
+    const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${openaiApiKey}`
+      },
+      body: JSON.stringify({
+        model: 'gpt-3.5-turbo',
+        messages: [
+          {
+            role: 'system',
+            content: `You are a logistics data extraction assistant. Extract transport order details from the provided email text.
+
+Return ONLY a JSON object with these fields:
+- pickup: The pickup location (city/address)
+- delivery: The delivery destination (city/address)
+- pallets: Number of pallets/collo (as integer, null if not mentioned)
+- weight: Weight with unit (e.g., "4500 kg", null if not mentioned)
+- pickup_date: Pickup date or relative time (e.g., "Tomorrow", "2024-03-15", null if not mentioned)
+
+If a field is not found in the text, return null for that field.
+Return valid JSON only, no markdown formatting.`
+          },
+          {
+            role: 'user',
+            content: email_text
+          }
+        ],
+        temperature: 0.1,
+        max_tokens: 500
+      })
+    });
+
+    if (!openaiResponse.ok) {
+      const errorData = await openaiResponse.json().catch(() => ({}));
+      console.error('OpenAI API error:', errorData);
+      return res.status(502).json({
+        success: false,
+        message: 'Error extracting order details. Please try again.'
+      });
+    }
+
+    const openaiData = await openaiResponse.json();
+    const aiContent = openaiData.choices?.[0]?.message?.content;
+
+    if (!aiContent) {
+      return res.status(502).json({
+        success: false,
+        message: 'No response from AI service.'
+      });
+    }
+
+    // Parse the AI response
+    let extractedData;
+    try {
+      extractedData = JSON.parse(aiContent);
+    } catch (parseError) {
+      console.error('Failed to parse AI response:', aiContent);
+      return res.status(502).json({
+        success: false,
+        message: 'Error parsing extraction results.'
+      });
+    }
+
+    // Validate and return the extracted data
+    res.json({
+      pickup: extractedData.pickup || null,
+      delivery: extractedData.delivery || null,
+      pallets: extractedData.pallets || null,
+      weight: extractedData.weight || null,
+      pickup_date: extractedData.pickup_date || null,
+      source: 'openai'
+    });
+
+  } catch (error) {
+    console.error('Error in extract-order:', error);
+    return res.status(502).json({
+      success: false,
+      message: 'Error extracting order details. Please try again.'
+    });
+  }
 });
 
 app.listen(PORT, () => {

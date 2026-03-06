@@ -1,4 +1,35 @@
 document.addEventListener('DOMContentLoaded', () => {
+  // Smooth scroll fallback for anchor links
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+      const href = this.getAttribute('href');
+      if (href === '#') return;
+      
+      const target = document.querySelector(href);
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }
+    });
+  });
+
+  // Smooth scroll for buttons with data-scroll-target
+  document.querySelectorAll('[data-scroll-target]').forEach(button => {
+    button.addEventListener('click', function () {
+      const targetId = this.getAttribute('data-scroll-target');
+      const target = document.querySelector(targetId);
+      if (target) {
+        target.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }
+    });
+  });
+
   const gridEl = document.getElementById('demo-grid');
   const featuredNameEl = document.getElementById('featured-name');
   const featuredDescEl = document.getElementById('featured-description');
@@ -10,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     yearEl.textContent = new Date().getFullYear().toString();
   }
 
-  fetch('/demos.json')
+  fetch('/api/demos')
     .then(res => res.json())
     .then(data => {
       const demos = Array.isArray(data.demos) ? data.demos : [];
@@ -21,8 +52,9 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      // Featured demo – first one for now.
-      const featured = demos[0];
+      // Filter only online/beta demos for featured section
+      const availableDemos = demos.filter(d => d.status === 'online' || d.status === 'beta');
+      const featured = availableDemos[0] || demos[0];
 
       if (featuredNameEl) featuredNameEl.textContent = featured.name;
       if (featuredDescEl) featuredDescEl.textContent = featured.description;
@@ -30,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (featuredBtnEl) {
         featuredBtnEl.onclick = () => {
           if (featured.url) {
-            window.open(featured.url, '_blank', 'noopener,noreferrer');
+            window.location.href = featured.url;
           }
         };
       }
@@ -39,14 +71,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
       demos.forEach((demo, index) => {
         const card = document.createElement('article');
-        // First card is featured (spans 2 columns)
-        card.className = index === 0 ? 'bento-card featured' : 'bento-card';
+        // First available card is featured (spans 2 columns)
+        const isFeatured = demo.id === featured.id;
+        card.className = isFeatured ? 'bento-card featured' : 'bento-card';
 
         const content = document.createElement('div');
         content.className = 'bento-card-content';
 
         // Badge (only for featured or special demos)
-        if (index === 0) {
+        if (isFeatured) {
           const badge = document.createElement('span');
           badge.className = 'bento-card-badge';
           badge.textContent = 'Featured';
@@ -65,21 +98,26 @@ document.addEventListener('DOMContentLoaded', () => {
         const footer = document.createElement('div');
         footer.className = 'bento-card-footer';
 
-        const category = document.createElement('span');
-        category.className = 'bento-card-category';
-        category.textContent = demo.category || '';
+        // Status indicator
+        const status = document.createElement('span');
+        status.className = `demo-status ${demo.status || 'offline'}`;
+        status.textContent = demo.status ? demo.status.replace('_', ' ') : 'offline';
 
         const button = document.createElement('button');
         button.className = 'bento-btn';
-        button.textContent = 'Open demo';
+        button.textContent = demo.status === 'coming_soon' ? 'Soon' : (demo.status === 'offline' ? 'Unavailable' : 'Open demo');
         button.type = 'button';
-        button.onclick = () => {
-          if (demo.url) {
-            window.open(demo.url, '_blank', 'noopener,noreferrer');
-          }
-        };
+        button.disabled = demo.status === 'coming_soon' || demo.status === 'offline';
+        
+        if (demo.status !== 'coming_soon' && demo.status !== 'offline') {
+          button.onclick = () => {
+            if (demo.url) {
+              window.location.href = demo.url;
+            }
+          };
+        }
 
-        footer.appendChild(category);
+        footer.appendChild(status);
         footer.appendChild(button);
 
         card.appendChild(content);

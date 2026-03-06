@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Logivex – AI Email Order Extraction</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a href="/" style="display: flex; align-items: center; text-decoration: none;">
+          <div class="logo-mark">Lx</div>
+          <div class="logo-text">Logivex</div>
+        </a>
+        <nav class="nav-links" style="margin-left: auto;">
+          <a href="/">Home</a>
+          <a href="/#demos">Demos</a>
+          <a href="/#contact">Contact</a>
+        </nav>
+        <a href="/quote-demo/" class="nav-cta">Get My Quote</a>
+      </div>
+    </header>
+
+    <main class="page">
+      <section class="hero">
+        <div class="container hero-inner">
+          <div class="hero-copy">
+            <p class="hero-kicker">AI-Powered Transport Intelligence</p>
+            <h1>AI Email → Transport Order Extraction</h1>
+            <p class="hero-subtitle">
+              Upload or paste a transport request email and let AI extract the shipment details automatically. Save time and eliminate manual data entry.
+            </p>
+            <button class="button hero-button" type="button" onclick="document.getElementById('extract-demo').scrollIntoView({ behavior: 'smooth' })">
+              Try the Demo
+            </button>
+          </div>
+
+          <div class="card" id="extract-demo" aria-label="Email extraction demo">
+            <header class="card-header">
+              <h2>Paste Transport Email</h2>
+              <p>Paste an email requesting transport and AI will extract the shipment details.</p>
+            </header>
+
+            <form id="extract-form" class="form">
+              <div class="field">
+                <label for="emailText">Email Content<span class="required">*</span></label>
+                <textarea
+                  id="emailText"
+                  name="emailText"
+                  required
+                  placeholder="Hi,
+
+We need transport from Rotterdam to Milan tomorrow.
+12 pallets – 4500 kg.
+
+Pickup: Rotterdam
+Delivery: Milan
+
+Best regards"
+                ></textarea>
+              </div>
+
+              <div id="form-message" class="form-message" aria-live="polite"></div>
+
+              <button type="submit" class="button" id="extract-button">
+                <span class="button-label">Extract Transport Order</span>
+                <span class="button-spinner" aria-hidden="true"></span>
+              </button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="how-it-works">
+        <div class="container section-inner">
+          <header class="section-header">
+            <h2>How it works</h2>
+            <p>From unstructured email to structured transport order in three simple steps.</p>
+          </header>
+          <div class="steps-grid">
+            <article class="step">
+              <h3>Step 1 — Paste Email</h3>
+              <p>Copy and paste any transport request email from your inbox into the demo.</p>
+            </article>
+            <article class="step">
+              <h3>Step 2 — AI Extraction</h3>
+              <p>Our AI reads the email and extracts key shipment details like locations, weight, and dates.</p>
+            </article>
+            <article class="step">
+              <h3>Step 3 — Get Structured Data</h3>
+              <p>Receive clean, structured transport order data ready for your logistics system.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section-trust" id="trust">
+        <div class="container section-inner">
+          <header class="section-header">
+            <h2>Why logistics teams choose Logivex</h2>
+          </header>
+          <div class="trust-grid">
+            <article class="trust-item">
+              <h3>Time Savings</h3>
+              <p>Eliminate manual data entry from emails. Extract transport orders in seconds instead of minutes.</p>
+            </article>
+            <article class="trust-item">
+              <h3>Accuracy</h3>
+              <p>AI-powered extraction reduces human error and ensures consistent data capture every time.</p>
+            </article>
+            <article class="trust-item">
+              <h3>Integration Ready</h3>
+              <p>Structured JSON output ready to connect with your TMS, ERP, or dispatch systems.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <div class="container footer-inner">
+          <p class="footer-brand">Logivex</p>
+          <p class="footer-meta">
+            <span>Contact: </span
+            ><a href="mailto:info@logivex.com">info@logivex.com</a>
+          </p>
+          <p class="footer-meta">
+            © <span id="footer-year"></span> Logivex. All rights reserved.
+          </p>
+        </div>
+      </footer>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>

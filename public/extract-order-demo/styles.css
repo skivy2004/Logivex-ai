@@ -1,5 +1,5 @@
 /* ========================================
-   Logivex Quote Demo - Modern SaaS Design
+   Logivex Extract Order Demo - Modern SaaS Design
    ======================================== */
 
 :root {
@@ -199,14 +199,14 @@ body {
 .hero-inner {
   position: relative;
   display: grid;
-  grid-template-columns: 1fr 440px;
+  grid-template-columns: 1fr 1fr;
   gap: 60px;
   align-items: start;
 }
 
 @media (max-width: 1024px) {
   .hero-inner {
-    grid-template-columns: 1fr 400px;
+    grid-template-columns: 1fr 1fr;
     gap: 48px;
   }
 }
@@ -299,7 +299,7 @@ body {
 }
 
 /* ========================================
-   Quote Form Card
+   Demo Cards
    ======================================== */
 
 .card {
@@ -309,14 +309,6 @@ body {
   padding: 28px;
   box-shadow: var(--shadow-lg);
   width: 100%;
-  max-width: 440px;
-  margin: 0 auto;
-}
-
-@media (max-width: 900px) {
-  .card {
-    max-width: 480px;
-  }
 }
 
 .card-header {
@@ -361,22 +353,8 @@ body {
   margin-left: 2px;
 }
 
-.field-inline {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-@media (max-width: 480px) {
-  .field-inline {
-    grid-template-columns: 1fr;
-  }
-}
-
-input,
-select,
 textarea {
-  padding: 10px 14px;
+  padding: 12px 14px;
   border: 1px solid var(--form-border);
   border-radius: var(--radius-md);
   background: var(--form-bg);
@@ -387,99 +365,18 @@ textarea {
   outline: none;
   transition: all 0.2s ease;
   width: 100%;
-  /* Remove browser defaults */
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
+  resize: vertical;
+  min-height: 200px;
 }
 
-/* Restore select dropdown arrow */
-select {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2.5 4.5L6 8L9.5 4.5' stroke='%236B7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  padding-right: 36px;
-  cursor: pointer;
-}
-
-/* Date picker icon fix */
-input[type="date"] {
-  position: relative;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'%3E%3C/rect%3E%3Cline x1='16' y1='2' x2='16' y2='6'%3E%3C/line%3E%3Cline x1='8' y1='2' x2='8' y2='6'%3E%3C/line%3E%3Cline x1='3' y1='10' x2='21' y2='10'%3E%3C/line%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  padding-right: 36px;
-}
-
-/* Remove default date picker icon in Webkit browsers */
-input[type="date"]::-webkit-calendar-picker-indicator {
-  opacity: 0;
-  position: absolute;
-  right: 12px;
-  width: 14px;
-  height: 14px;
-  cursor: pointer;
-}
-
-input::placeholder,
 textarea::placeholder {
   color: var(--form-placeholder);
   opacity: 1;
 }
 
-input:focus,
-select:focus,
 textarea:focus {
   border-color: var(--form-border-focus);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-/* Ensure select options have proper colors */
-select option {
-  color: var(--form-input-text);
-  background: var(--form-bg);
-  padding: 8px;
-}
-
-/* Number input spinner styling */
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
-  opacity: 1;
-  height: 20px;
-  cursor: pointer;
-}
-
-/* Focus visible for accessibility */
-input:focus-visible,
-select:focus-visible,
-textarea:focus-visible {
-  outline: 2px solid var(--form-border-focus);
-  outline-offset: 2px;
-}
-
-textarea {
-  resize: vertical;
-  min-height: 64px;
-}
-
-.form-divider {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 4px 0;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-secondary);
-}
-
-.form-divider::before,
-.form-divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--border-light);
 }
 
 .button {
@@ -544,55 +441,113 @@ textarea {
   color: var(--error);
 }
 
-.field-error input,
-.field-error select,
-.field-error textarea {
-  border-color: var(--error);
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+/* ========================================
+   Output Card
+   ======================================== */
+
+.output-card {
+  background: white;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  box-shadow: var(--shadow-lg);
+  height: 100%;
 }
 
-.quote-metrics {
+.output-card .card-header {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border-light);
+  gap: 12px;
 }
 
-.metric-chip {
-  font-size: 0.8125rem;
-  color: var(--text-secondary);
+.output-card .card-header::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background: var(--success);
+  border-radius: 50%;
+  display: inline-block;
 }
 
-.price-highlight {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
-  border-radius: var(--radius-full);
-  border: 1px solid rgba(59, 130, 246, 0.2);
+.output-card .card-header.extracting::before {
+  background: var(--accent-blue);
+  animation: pulse 1.5s ease-in-out infinite;
 }
 
-.price-label {
-  font-size: 0.6875rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-secondary);
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.output-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.output-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 16px;
+  background: var(--bg-primary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+}
+
+.output-field-label {
+  font-size: 0.75rem;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
 }
 
-.price-value {
+.output-field-value {
   font-size: 1rem;
-  font-weight: 700;
-  color: var(--accent-blue);
+  font-weight: 500;
+  color: var(--text-primary);
+  min-height: 24px;
+}
+
+.output-field-value.empty {
+  color: var(--form-placeholder);
+  font-style: italic;
+}
+
+.output-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.output-placeholder-icon {
+  width: 64px;
+  height: 64px;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+}
+
+.output-placeholder-text {
+  font-size: 0.9375rem;
+  max-width: 280px;
 }
 
 /* ========================================
-   How It Works Section
+   Demo Info Section
    ======================================== */
 
 .section {
@@ -657,59 +612,11 @@ textarea {
 }
 
 /* ========================================
-   Quote Summary Section
-   ======================================== */
-
-.section-summary {
-  background: white;
-}
-
-.summary-card {
-  background: white;
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-lg);
-  padding: 24px 32px;
-  max-width: 500px;
-  margin: 0 auto;
-  box-shadow: var(--shadow-md);
-}
-
-.summary-row {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 12px 0;
-  font-size: 0.9375rem;
-}
-
-.summary-row + .summary-row {
-  border-top: 1px dashed var(--border-light);
-}
-
-.summary-label {
-  color: var(--text-secondary);
-  font-weight: 500;
-}
-
-.summary-value {
-  text-align: right;
-  color: var(--text-primary);
-  font-weight: 500;
-}
-
-.summary-row-price .summary-price-value {
-  font-weight: 700;
-  color: var(--accent-blue);
-  font-size: 1.25rem;
-}
-
-/* ========================================
    Trust Section
    ======================================== */
 
 .section-trust {
-  background: var(--bg-primary);
+  background: white;
 }
 
 .trust-grid {
@@ -719,7 +626,7 @@ textarea {
 }
 
 .trust-item {
-  background: white;
+  background: var(--bg-primary);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-lg);
   padding: 32px;
