@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const featuredDescEl = document.getElementById('featured-description');
   const featuredCatEl = document.getElementById('featured-category');
   const featuredBtnEl = document.getElementById('featured-button');
-  const yearEl = document.getElementById('dh-year');
+  const yearEl = document.getElementById('footer-year');
 
   if (yearEl) {
     yearEl.textContent = new Date().getFullYear().toString();
@@ -37,27 +37,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (!gridEl) return;
 
-      demos.forEach(demo => {
+      demos.forEach((demo, index) => {
         const card = document.createElement('article');
-        card.className = 'dh-card';
+        // First card is featured (spans 2 columns)
+        card.className = index === 0 ? 'bento-card featured' : 'bento-card';
+
+        const content = document.createElement('div');
+        content.className = 'bento-card-content';
+
+        // Badge (only for featured or special demos)
+        if (index === 0) {
+          const badge = document.createElement('span');
+          badge.className = 'bento-card-badge';
+          badge.textContent = 'Featured';
+          content.appendChild(badge);
+        }
 
         const title = document.createElement('h3');
-        title.className = 'dh-card-title';
         title.textContent = demo.name;
 
         const desc = document.createElement('p');
-        desc.className = 'dh-card-description';
         desc.textContent = demo.description;
 
+        content.appendChild(title);
+        content.appendChild(desc);
+
         const footer = document.createElement('div');
-        footer.className = 'dh-card-footer';
+        footer.className = 'bento-card-footer';
 
         const category = document.createElement('span');
-        category.className = 'dh-card-category';
+        category.className = 'bento-card-category';
         category.textContent = demo.category || '';
 
         const button = document.createElement('button');
-        button.className = 'dh-btn dh-btn-outline';
+        button.className = 'bento-btn';
         button.textContent = 'Open demo';
         button.type = 'button';
         button.onclick = () => {
@@ -69,8 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
         footer.appendChild(category);
         footer.appendChild(button);
 
-        card.appendChild(title);
-        card.appendChild(desc);
+        card.appendChild(content);
         card.appendChild(footer);
 
         gridEl.appendChild(card);

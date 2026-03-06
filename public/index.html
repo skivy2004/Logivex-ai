@@ -7,103 +7,153 @@
     <link rel="stylesheet" href="demo-hub.css" />
   </head>
   <body>
-    <header class="dh-header">
-      <div class="dh-container dh-header-inner">
-        <div class="dh-logo">
-          <div class="dh-logo-mark">Lx</div>
-          <div class="dh-logo-text">
-            <span class="dh-logo-title">Logivex</span>
-            <span class="dh-logo-subtitle">AI Automation Demos</span>
-          </div>
+    <header class="site-header">
+      <div class="dh-container header-inner">
+        <div class="logo">
+          <div class="logo-mark">Lx</div>
+          <div class="logo-text">Logivex</div>
         </div>
-        <nav class="dh-nav">
-          <a href="/" class="dh-nav-link dh-nav-link-active">Home</a>
-          <a href="/#demos" class="dh-nav-link">Demos</a>
+        <nav class="main-nav">
+          <a href="#features">Features</a>
+          <a href="#demos">Demos</a>
+          <a href="#contact" class="nav-cta">Contact</a>
         </nav>
       </div>
     </header>
 
-    <main class="dh-main">
+    <main>
       <!-- Hero Section -->
-      <section class="dh-hero dh-hero-large">
-        <div class="dh-container dh-hero-inner">
-          <div class="dh-hero-copy dh-hero-copy-centered">
-            <span class="dh-hero-badge">AI-Powered Solutions</span>
-            <h1>AI Automation for Logistics & Transport Companies</h1>
-            <p class="dh-hero-lead">
-              Transform your logistics operations with intelligent automation. From instant quotes to AI-powered email handling, we help you move faster, reduce costs, and delight customers.
-            </p>
-            <div class="dh-hero-actions">
-              <a href="#demos" class="dh-btn dh-btn-primary">Explore Demos</a>
-              <a href="#features" class="dh-btn dh-btn-outline">Learn More</a>
-            </div>
-          </div>
+      <section class="hero">
+        <div class="hero-bg">
+          <div class="gradient-blob blob-1"></div>
+          <div class="gradient-blob blob-2"></div>
+          <div class="gradient-blob blob-3"></div>
+        </div>
+        <div class="dh-container hero-content">
+          <h1 class="hero-title">
+            Turn Data Into<br />Automation Automatically
+          </h1>
+          <p class="hero-subtitle">
+            AI automation solutions for logistics and transport companies. Reduce manual work and automate quotes, emails and workflows.
+          </p>
+          <a href="#demos" class="btn btn-primary">Get Started</a>
         </div>
       </section>
 
       <!-- Features Section -->
-      <section class="dh-section dh-features" id="features">
+      <section class="features" id="features">
         <div class="dh-container">
-          <header class="dh-section-header dh-section-header-centered">
-            <h2>What We Offer</h2>
-            <p>Smart automation solutions tailored for logistics and transport companies</p>
-          </header>
-          <div class="dh-feature-grid">
-            <article class="dh-feature-card">
-              <div class="dh-feature-icon">🚛</div>
+          <div class="features-header">
+            <span class="section-label">Features</span>
+            <h2 class="section-title">Everything you need to automate your logistics</h2>
+          </div>
+          <div class="features-grid">
+            <article class="feature-card">
+              <div class="feature-icon">🚛</div>
               <h3>AI Quote Automation</h3>
-              <p>Instant transport price calculations with Google Maps integration. Reduce quote response time from hours to seconds.</p>
+              <p>Instant transport pricing with route calculation.</p>
             </article>
-            <article class="dh-feature-card">
-              <div class="dh-feature-icon">✉️</div>
+            <article class="feature-card">
+              <div class="feature-icon">✉️</div>
               <h3>AI Email Automation</h3>
-              <p>Automatically generate professional logistics emails from bullet points. Handle customer inquiries 24/7 without lifting a finger.</p>
+              <p>Automatically generate logistics emails.</p>
             </article>
-            <article class="dh-feature-card">
-              <div class="dh-feature-icon">📊</div>
-              <h3>Logistics Automation</h3>
-              <p>Smart dashboards, KPI tracking, and CRM integration. Get full visibility into your operations with AI-powered insights.</p>
+            <article class="feature-card">
+              <div class="feature-icon">📊</div>
+              <h3>Logistics Dashboards</h3>
+              <p>Track shipments and operations.</p>
+            </article>
+            <article class="feature-card">
+              <div class="feature-icon">⚡</div>
+              <h3>Automation Workflows</h3>
+              <p>Automate repetitive logistics tasks.</p>
             </article>
           </div>
         </div>
       </section>
 
-      <!-- Featured Demo Section -->
-      <section class="dh-section dh-featured">
+      <!-- Intelligence Section -->
+      <section class="intelligence">
         <div class="dh-container">
-          <header class="dh-section-header">
-            <h2>Featured demo</h2>
-            <p>Start here when you want to showcase the core Logivex transport quote experience.</p>
-          </header>
-          <article class="dh-featured-card" id="featured-card">
-            <div class="dh-featured-text">
-              <h3 id="featured-name">Loading…</h3>
-              <p id="featured-description"></p>
-              <span id="featured-category" class="dh-pill"></span>
+          <div class="intelligence-grid">
+            <div class="intelligence-content">
+              <span class="section-label">About Us</span>
+              <h2 class="section-title">AI Intelligence for Logistics Growth</h2>
+              <p class="intelligence-text">
+                We build AI automation systems that help logistics companies scale operations and eliminate repetitive tasks.
+              </p>
+              <a href="#demos" class="btn btn-secondary">Learn More</a>
             </div>
-            <div class="dh-featured-actions">
-              <button id="featured-button" class="dh-btn dh-btn-primary">Launch demo</button>
+            <div class="intelligence-visual">
+              <div class="visual-shape">
+                <div class="shape-inner"></div>
+              </div>
             </div>
-          </article>
+          </div>
         </div>
       </section>
 
-      <!-- All Demos Section -->
-      <section class="dh-section" id="demos">
+      <!-- Demo Hub Section (Preserved Functionality) -->
+      <section class="demos-section" id="demos">
         <div class="dh-container">
-          <header class="dh-section-header">
-            <h2>All demos</h2>
-            <p>Select a demo card to open it in a new tab.</p>
-          </header>
-          <div id="demo-grid" class="dh-grid"></div>
+          <!-- Featured Demo -->
+          <div class="demos-header">
+            <span class="section-label">Interactive Demos</span>
+            <h2 class="section-title">Try our AI automation demos</h2>
+            <p class="section-subtitle">Experience the power of AI automation firsthand</p>
+          </div>
+          
+          <article class="featured-demo" id="featured-card">
+            <div class="featured-content">
+              <span id="featured-category" class="featured-badge"></span>
+              <h3 id="featured-name">Loading…</h3>
+              <p id="featured-description"></p>
+              <button id="featured-button" class="btn btn-primary">Launch Demo</button>
+            </div>
+          </article>
+
+          <!-- Demo Grid -->
+          <div class="demo-grid-container">
+            <h3 class="grid-title">All Demos</h3>
+            <div id="demo-grid" class="demo-grid"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CTA Section -->
+      <section class="cta" id="contact">
+        <div class="dh-container">
+          <h2 class="cta-title">Need automation for your logistics business?</h2>
+          <a href="mailto:info@logivex.com" class="btn btn-primary">Contact Us</a>
         </div>
       </section>
     </main>
 
-    <footer class="dh-footer">
-      <div class="dh-container dh-footer-inner">
-        <span>© <span id="dh-year"></span> Logivex. AI Automation for Logistics & Transport.</span>
-        <span class="dh-footer-meta">Built on Node.js, Express & vanilla web tech.</span>
+    <!-- Footer -->
+    <footer class="site-footer">
+      <div class="dh-container">
+        <div class="footer-grid">
+          <div class="footer-brand">
+            <div class="logo">
+              <div class="logo-mark">Lx</div>
+              <div class="logo-text">Logivex</div>
+            </div>
+            <p class="footer-tagline">AI automation for logistics</p>
+          </div>
+          <div class="footer-links">
+            <h4>Explore</h4>
+            <a href="#features">Features</a>
+            <a href="#demos">Demos</a>
+            <a href="#contact">Contact</a>
+          </div>
+          <div class="footer-contact">
+            <h4>Contact</h4>
+            <a href="mailto:info@logivex.com">info@logivex.com</a>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p>&copy; <span id="footer-year"></span> Logivex. All rights reserved.</p>
+        </div>
       </div>
     </footer>
 
