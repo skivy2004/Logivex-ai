@@ -40,12 +40,15 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   fetch('/api/demos')
-    .then(res => res.json())
+    .then(res => {
+      if (!res.ok) throw new Error('API returned ' + res.status);
+      return res.json();
+    })
     .then(data => {
-      const demos = Array.isArray(data.demos) ? data.demos : [];
+      const demos = Array.isArray(data.demos) ? data.demos : (Array.isArray(data) ? data : []);
       if (!demos.length) {
         if (gridEl) {
-          gridEl.textContent = 'No demos are configured yet. Add demos in demos.js.';
+          gridEl.textContent = 'No demos are configured yet.';
         }
         return;
       }

@@ -7,6 +7,7 @@ const requiredEnvVars = [
 ];
 
 const optionalEnvVars = [
+  'DEMOS_API_URL',
   'N8N_WEBHOOK_CONTACT',
   'N8N_WEBHOOK_AUTOMATION_INTAKE',
   'N8N_WEBHOOK_EMAIL',
@@ -79,6 +80,7 @@ function validateEnvironment() {
 function getConfig() {
   return {
     port: process.env.PORT || 3000,
+    demosApiUrl: process.env.DEMOS_API_URL || 'https://logivex-ai.vercel.app/api/demos',
     googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY,
     sampleEmailPrompt: process.env.SAMPLE_EMAIL_PROMPT ? String(process.env.SAMPLE_EMAIL_PROMPT).trim() : '',
     supabaseUrl: process.env.SUPABASE_URL || '',

@@ -61,21 +61,57 @@ app.get('/automation-intake', (req, res) => {
 });
 
 app.get('/api/demos', async (req, res) => {
+  const demosApiUrl = config.demosApiUrl;
+  const requestHost = (req.get('host') || '').split(':')[0];
+  let apiHost;
   try {
-    const supabase = getSupabaseAdmin();
-    let statusMap = {};
-    if (supabase) {
-      const { data: rows } = await supabase.from('features').select('id, status');
-      if (Array.isArray(rows)) rows.forEach(r => { statusMap[r.id] = r.status; });
+    apiHost = demosApiUrl ? new URL(demosApiUrl).hostname : '';
+  } catch (_) {
+    apiHost = '';
+  }
+  const isSameOrigin = apiHost && requestHost && apiHost === requestHost;
+
+  async function localDemos() {
+    try {
+      const supabase = getSupabaseAdmin();
+      let statusMap = {};
+      if (supabase) {
+        const { data: rows } = await supabase.from('features').select('id, status');
+        if (Array.isArray(rows)) rows.forEach(r => { statusMap[r.id] = r.status; });
+      }
+      const merged = demos.map(d => ({
+        ...d,
+        status: statusMap[d.id] != null ? statusMap[d.id] : d.status
+      }));
+      return { demos: merged };
+    } catch (err) {
+      logger.error('Demos local fetch error', { error: err.message });
+      return { demos };
     }
-    const merged = demos.map(d => ({
-      ...d,
-      status: statusMap[d.id] != null ? statusMap[d.id] : d.status
-    }));
-    res.json({ demos: merged });
+  }
+
+  // Force local source (avoids recursion when this app fetches its own /api/demos)
+  if (req.query.source === 'local') {
+    const data = await localDemos();
+    return res.json(data);
+  }
+
+  if (!demosApiUrl || isSameOrigin) {
+    const data = await localDemos();
+    return res.json(data);
+  }
+
+  try {
+    const url = demosApiUrl.includes('?') ? demosApiUrl + '&source=local' : demosApiUrl + '?source=local';
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`Demos API returned ${response.status}`);
+    const data = await response.json();
+    const list = Array.isArray(data.demos) ? data.demos : (Array.isArray(data) ? data : []);
+    return res.json({ demos: list });
   } catch (err) {
-    logger.error('Demos fetch error', { error: err.message });
-    res.json({ demos });
+    logger.error('Demos API fetch error', { error: err.message });
+    const data = await localDemos();
+    res.json(data);
   }
 });
 
