@@ -1,0 +1,670 @@
+/* ========================================
+   Email → Transport Order Extraction
+   Uses demo-hub.css design tokens
+   ======================================== */
+
+.email-demo-page {
+  padding-top: 80px;
+  padding-bottom: 56px;
+  min-height: 100vh;
+}
+
+/* Demo tool: first section under navbar */
+.email-demo-demo-section {
+  padding: 32px 0 56px;
+}
+
+/* STATE 1 — Initial: only left card visible, centered */
+.email-demo-wrapper {
+  width: 100%;
+  max-width: 1200px;
+  margin: 80px auto;
+  display: flex;
+  justify-content: center;
+}
+
+.email-demo-left {
+  width: 640px;
+  max-width: 100%;
+}
+
+.email-demo-right {
+  display: none;
+}
+
+/* Initial state: centered title and buttons */
+.email-demo-wrapper .email-demo-col-input .input-label.center-title {
+  text-align: center;
+}
+
+.email-demo-wrapper .email-demo-col-input .demo-actions.center-buttons {
+  justify-content: center;
+}
+
+/* STATE 2 — After extraction: two-column grid */
+.email-demo-wrapper.show-results {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+}
+
+.email-demo-wrapper.show-results .email-demo-right {
+  display: block;
+}
+
+/* After extraction: left-aligned title and buttons, left column shifts left */
+.email-demo-wrapper.show-results .email-demo-col-input .input-label {
+  text-align: left;
+}
+
+.email-demo-wrapper.show-results .email-demo-col-input .demo-actions {
+  justify-content: flex-start;
+}
+
+.email-demo-col {
+  min-width: 0;
+}
+
+.email-demo-col-input {
+  transition: transform 0.35s ease;
+}
+
+.email-demo-wrapper.show-results .email-demo-left .email-demo-col-input {
+  transform: translateX(-80px);
+}
+
+/* Right panel: slide in after left column moves (350ms) */
+.email-demo-col-output.result-panel {
+  opacity: 0;
+  transform: translateX(60px);
+  overflow: hidden;
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.email-demo-col-output.result-panel.result-panel-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.email-demo-col-input .demo-card {
+  padding: 24px;
+}
+
+.email-demo-output-card {
+  padding: 24px;
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+}
+
+.email-demo-output-placeholder {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+  text-align: center;
+}
+
+.email-demo-output-placeholder p {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.email-demo-output-placeholder strong {
+  color: var(--text-primary);
+}
+
+/* When result is shown, result-section fills the card */
+.email-demo-output-card .result-section {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.email-demo-output-card .result-header {
+  margin-bottom: 16px;
+}
+
+.email-demo-output-card .order-card-container {
+  flex: 1;
+  min-height: 0;
+}
+
+/* Shared card + form styles – preserve IDs/classes for JS */
+.demo-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(248, 249, 252, 0.98));
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.demo-input-group {
+  margin-bottom: 18px;
+}
+
+.input-label {
+  display: block;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  font-size: 0.9375rem;
+}
+
+.email-textarea {
+  width: 100%;
+  min-height: 220px;
+  padding: 16px 18px;
+  font-size: 0.9375rem;
+  font-family: inherit;
+  line-height: 1.6;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius-sm);
+  resize: vertical;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.email-textarea::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.8;
+}
+
+.email-textarea:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.demo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.extract-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  font-size: 1rem;
+  font-family: inherit;
+  color: var(--text-light);
+  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+  border: none;
+  cursor: pointer;
+  transition: filter 0.2s ease, transform 0.1s ease;
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35);
+}
+
+.extract-btn:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+
+.extract-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.extract-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.85;
+}
+
+.extract-btn .spinner {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: email-demo-spin 0.8s linear infinite;
+}
+
+@keyframes email-demo-spin {
+  to { transform: rotate(360deg); }
+}
+
+.extract-btn.loading {
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 10px 20px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: none;
+  padding: 10px 16px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.btn-ghost:hover {
+  color: var(--text-primary);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.btn-sm {
+  padding: 8px 14px;
+  font-size: 0.875rem;
+}
+
+.form-message {
+  min-height: 1.5rem;
+  font-size: 0.9375rem;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.form-message.form-message--success {
+  color: #22c55e;
+}
+
+.form-message.form-message--error {
+  color: #ef4444;
+}
+
+/* AI Processing */
+.ai-processing-section {
+  margin-top: 20px;
+  padding: 20px;
+  background: var(--bg-primary);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: var(--radius-md);
+  animation: email-demo-fadeIn 0.25s ease;
+}
+
+@keyframes email-demo-fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.ai-processing-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 14px;
+}
+
+.ai-processing-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ai-step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.9375rem;
+  color: var(--text-secondary);
+  opacity: 0.5;
+  transition: opacity 0.3s ease;
+}
+
+.ai-step.active {
+  opacity: 1;
+  color: var(--text-primary);
+}
+
+.ai-step.done .ai-step-icon {
+  background: #22c55e;
+  border-color: #22c55e;
+}
+
+.ai-step.done .ai-step-icon::after {
+  content: '✓';
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.ai-step-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border: 2px solid rgba(0, 0, 0, 0.12);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.ai-step.active .ai-step-icon {
+  border-color: var(--accent-blue);
+  background: rgba(59, 130, 246, 0.15);
+  animation: email-demo-pulse 1s ease-in-out infinite;
+}
+
+@keyframes email-demo-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.ai-step-complete {
+  display: none;
+}
+
+.ai-step-complete.visible {
+  display: flex;
+  opacity: 1;
+  color: #22c55e;
+}
+
+.ai-step-complete.visible .ai-step-icon {
+  background: #22c55e;
+  border-color: #22c55e;
+}
+
+.ai-step-complete.visible .ai-step-icon::after {
+  content: '✓';
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+/* Result section */
+.result-section {
+  animation: email-demo-fadeIn 0.3s ease;
+}
+
+.result-section.result-visible .order-card-container {
+  animation: email-demo-slideUp 0.35s ease;
+}
+
+@keyframes email-demo-slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.result-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.result-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.result-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.order-card-container {
+  margin-bottom: 0;
+}
+
+.order-card {
+  background: var(--bg-primary);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.order-card-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  gap: 16px;
+}
+
+.order-card-row:last-child {
+  border-bottom: none;
+}
+
+.order-card-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.order-card-value {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  text-align: right;
+}
+
+.result-json {
+  width: 100%;
+  padding: 16px;
+  font-size: 0.8125rem;
+  font-family: ui-monospace, monospace;
+  line-height: 1.6;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: var(--radius-sm);
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Route section */
+.route-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  animation: email-demo-fadeIn 0.35s ease;
+}
+
+.route-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.route-text {
+  font-size: 1rem;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+
+.route-map {
+  width: 100%;
+  height: 240px;
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: var(--radius-md);
+  margin-bottom: 12px;
+}
+
+.route-fallback {
+  margin-bottom: 12px;
+}
+
+.route-fallback-line {
+  height: 3px;
+  background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+  border-radius: 2px;
+  margin: 16px 0;
+}
+
+.route-fallback-labels {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 0.9375rem;
+  color: var(--text-primary);
+}
+
+.route-label {
+  font-weight: 600;
+}
+
+.route-arrow {
+  color: var(--accent-blue);
+  font-weight: 700;
+}
+
+.route-distance {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+/* Benefits */
+.email-demo-benefits-section {
+  padding: 48px 0 64px;
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.email-demo-benefits-title {
+  margin-bottom: 32px;
+}
+
+.email-demo-benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+}
+
+.email-demo-benefit-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(248, 249, 252, 0.98));
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: var(--radius-lg);
+  padding: 28px 24px;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.email-demo-benefit-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.email-demo-benefit-icon {
+  display: inline-flex;
+  font-size: 1.75rem;
+  margin-bottom: 14px;
+}
+
+.email-demo-benefit-card h3 {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.email-demo-benefit-card p {
+  font-size: 0.9375rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Footer */
+.email-demo-footer {
+  padding: 32px 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  text-align: center;
+}
+
+.footer-inner {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.footer-brand {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.footer-meta {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+/* Responsive: stack when narrow */
+@media (max-width: 900px) {
+  .email-demo-wrapper.show-results {
+    grid-template-columns: 1fr;
+  }
+
+  .email-demo-wrapper.show-results .email-demo-left .email-demo-col-input {
+    transform: none;
+  }
+
+  .email-demo-left {
+    max-width: 100%;
+  }
+
+  .email-demo-output-card {
+    min-height: 260px;
+  }
+}
+
+@media (max-width: 768px) {
+  .email-demo-demo-section {
+    padding: 24px 0 40px;
+  }
+
+  .email-demo-col-input .demo-card,
+  .email-demo-output-card {
+    padding: 20px;
+  }
+
+  .demo-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .demo-actions .btn {
+    width: 100%;
+  }
+
+  .email-demo-benefits-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .email-demo-page {
+    padding-top: 64px;
+  }
+}

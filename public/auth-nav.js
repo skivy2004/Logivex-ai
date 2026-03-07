@@ -39,7 +39,7 @@
             if (user && user.role === 'admin') {
               setLinks('<a href="/admin/dashboard">Admin</a><a href="#" id="auth-logout" class="nav-cta">Log out</a>');
             } else {
-              setLinks('<a href="#" id="auth-logout">Log out</a>');
+              setLinks('<a href="#" id="auth-logout" class="nav-cta">Log out</a>');
             }
           })
           .catch(function () {

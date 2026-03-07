@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Logivex – Instant Transport Quotes</title>
+    <link rel="stylesheet" href="/demo-hub.css" />
     <link rel="stylesheet" href="styles.css" />
     <link rel="stylesheet" href="cargo-styles.css" />
   </head>
@@ -20,19 +21,19 @@ fetch("/api/config")
     document.head.appendChild(script);
   });
 </script>
-  <body>
-    <header class="site-header">
-      <div class="container header-inner">
-        <a href="/" style="display: flex; align-items: center; text-decoration: none;">
+  <body class="demo-page">
+    <header class="site-header site-header--website">
+      <div class="dh-container header-inner">
+        <a href="/" class="logo" style="text-decoration: none;">
           <div class="logo-mark">Lx</div>
           <div class="logo-text">Logivex</div>
         </a>
-        <nav class="nav-links" style="margin-left: auto;">
+        <nav class="main-nav main-nav--website">
           <a href="/">Home</a>
           <a href="/#demos">Demos</a>
-          <a href="/#contact">Contact</a>
+          <a href="/#contact" data-contact-open>Contact</a>
+          <span id="auth-nav" class="nav-auth-slot"></span>
         </nav>
-        <a href="/quote-demo/" class="nav-cta">Get My Quote</a>
       </div>
     </header>
 
@@ -55,6 +56,11 @@ fetch("/api/config")
               <h2 data-i18n="form.title">Request a transport quote</h2>
               <p data-i18n="form.subtitle">Share your route, shipment details and contact information. We will send your quote by email.</p>
             </header>
+
+            <div id="admin-demo-section" class="admin-demo-section" style="display: none;" aria-label="Admin demo mode">
+              <p class="admin-demo-label">Admin Demo Mode</p>
+              <button type="button" id="demo-prefill-btn" class="button button-secondary">Generate Demo Quote</button>
+            </div>
 
             <form id="quote-form" class="form" novalidate>
               <div class="field">
@@ -256,6 +262,11 @@ fetch("/api/config")
       </footer>
     </main>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/demo-hub.js"></script>
+    <script src="/auth-nav.js"></script>
+    <script src="/js/contact-modal.js"></script>
+    <script src="/js/demoQuoteGenerator.js"></script>
     <script src="app.js"></script>
     <!-- Google Maps error handler -->
     <script>

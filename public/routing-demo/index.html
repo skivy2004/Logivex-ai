@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI Routing Agent | Logivex</title>
-  <link rel="stylesheet" href="../demo-hub.css">
+  <link rel="stylesheet" href="/demo-hub.css">
   <style>
     :root {
       --primary-gradient: linear-gradient(135deg, #3b82f6, #8b5cf6);
@@ -428,16 +428,18 @@
     }
   </style>
 </head>
-<body>
-  <header class="site-header">
-    <div class="container header-inner">
-      <a href="/" style="display: flex; align-items: center; text-decoration: none;">
+<body class="demo-page">
+  <header class="site-header site-header--website">
+    <div class="dh-container header-inner">
+      <a href="/" class="logo" style="text-decoration: none;">
         <div class="logo-mark">Lx</div>
         <div class="logo-text">Logivex</div>
       </a>
-      <nav class="main-nav">
+      <nav class="main-nav main-nav--website">
         <a href="/">Home</a>
         <a href="/#demos">Demos</a>
+        <a href="/#contact" data-contact-open>Contact</a>
+        <span id="auth-nav" class="nav-auth-slot"></span>
       </nav>
     </div>
   </header>
@@ -495,6 +497,10 @@
     </section>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/demo-hub.js"></script>
+  <script src="/auth-nav.js"></script>
+  <script src="/js/contact-modal.js"></script>
   <script>
     // City coordinates database
     const cityCoordinates = {

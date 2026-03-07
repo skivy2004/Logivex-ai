@@ -520,6 +520,38 @@ textarea {
   box-shadow: none;
 }
 
+.button-secondary {
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--text-primary);
+  box-shadow: none;
+  width: auto;
+  margin-top: 0;
+}
+
+.button-secondary:hover {
+  background: rgba(0, 0, 0, 0.1);
+  box-shadow: none;
+}
+
+.admin-demo-section {
+  margin-bottom: 20px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.admin-demo-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+
+.admin-demo-section .button {
+  width: auto;
+}
+
 .button-spinner {
   display: none;
   width: 16px;

@@ -56,6 +56,10 @@ app.get('/logistics-dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'logistics-dashboard', 'index.html'));
 });
 
+app.get('/automation-intake', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'automation-intake', 'index.html'));
+});
+
 app.get('/api/demos', async (req, res) => {
   try {
     const supabase = getSupabaseAdmin();
@@ -185,8 +189,9 @@ app.get('/admin/dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'auth', 'admin.html'));
 });
 
+// POST /api/quote - Forwards quote data to n8n workflow webhook (payload unchanged for n8n)
 app.post('/api/quote', (req, res) => {
-  if (!config.webhooks.transportQuote) {
+  if (!config.webhooks.n8nTransportQuote) {
     return res.status(500).json({ success: false, message: 'Webhook URL not configured on server.' });
   }
 
@@ -238,9 +243,9 @@ app.post('/api/quote', (req, res) => {
 
   let parsedUrl;
   try {
-    parsedUrl = new URL(config.webhooks.transportQuote);
+    parsedUrl = new URL(config.webhooks.n8nTransportQuote);
   } catch (e) {
-    return res.status(500).json({ success: false, message: 'Invalid Make.com webhook URL configuration.' });
+    return res.status(500).json({ success: false, message: 'Invalid n8n webhook URL configuration.' });
   }
 
   const payload = JSON.stringify({
@@ -283,15 +288,15 @@ app.post('/api/quote', (req, res) => {
     }
   };
 
-  const makeReq = client.request(options, makeRes => {
+  const webhookReq = client.request(options, webhookRes => {
     let body = '';
-    makeRes.on('data', chunk => {
+    webhookRes.on('data', chunk => {
       body += chunk;
     });
-    makeRes.on('end', () => {
-      const ok = makeRes.statusCode >= 200 && makeRes.statusCode < 300;
+    webhookRes.on('end', () => {
+      const ok = webhookRes.statusCode >= 200 && webhookRes.statusCode < 300;
       if (!ok) {
-        console.error('Make.com webhook responded with status', makeRes.statusCode, 'body:', body);
+        logger.error('n8n quote webhook non-2xx', { status: webhookRes.statusCode, body });
       }
       return res.status(ok ? 200 : 502).json({
         success: ok,
@@ -300,13 +305,145 @@ app.post('/api/quote', (req, res) => {
     });
   });
 
-  makeReq.on('error', err => {
-    console.error('Error calling Make.com webhook:', err);
+  webhookReq.on('error', err => {
+    logger.error('n8n quote webhook request error', { error: err.message });
     return res.status(502).json({ success: false, message: 'Error contacting quote service. Please try again later.' });
   });
 
-  makeReq.write(payload);
-  makeReq.end();
+  webhookReq.write(payload);
+  webhookReq.end();
+});
+
+// POST /api/contact - Contact form; forwards to n8n workflow webhook (N8N_WEBHOOK_CONTACT). Payload unchanged.
+app.post('/api/contact', (req, res) => {
+  const webhookUrl = config.webhooks.n8nContact;
+  if (!webhookUrl) {
+    return res.status(503).json({ success: false, message: 'Contact form is not configured.' });
+  }
+
+  const { name, email, company, message } = req.body || {};
+  if (!name || !email || !message) {
+    return res.status(400).json({ success: false, message: 'Name, email and message are required.' });
+  }
+
+  let parsedUrl;
+  try {
+    parsedUrl = new URL(webhookUrl);
+  } catch (e) {
+    logger.error('Invalid contact webhook URL', { error: e.message });
+    return res.status(500).json({ success: false, message: 'Contact form is misconfigured.' });
+  }
+
+  const payload = JSON.stringify({
+    name: String(name).trim(),
+    email: String(email).trim(),
+    company: (company && String(company).trim()) || '',
+    message: String(message).trim(),
+    source: 'logivex-contact-modal',
+    submittedAt: new Date().toISOString()
+  });
+
+  const isHttps = parsedUrl.protocol === 'https:';
+  const client = isHttps ? https : http;
+  const options = {
+    hostname: parsedUrl.hostname,
+    port: parsedUrl.port || (isHttps ? 443 : 80),
+    path: parsedUrl.pathname + (parsedUrl.search || ''),
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(payload)
+    }
+  };
+
+  const webhookReq = client.request(options, webhookRes => {
+    let body = '';
+    webhookRes.on('data', chunk => { body += chunk; });
+    webhookRes.on('end', () => {
+      const ok = webhookRes.statusCode >= 200 && webhookRes.statusCode < 300;
+      if (!ok) {
+        logger.error('n8n contact webhook error', { status: webhookRes.statusCode, body });
+      }
+      return res.status(ok ? 200 : 502).json({
+        success: ok,
+        message: ok ? 'Message sent. We\'ll get back to you soon.' : 'Something went wrong. Please try again later.'
+      });
+    });
+  });
+
+  webhookReq.on('error', err => {
+    logger.error('n8n contact webhook request error', { error: err.message });
+    return res.status(502).json({ success: false, message: 'Unable to send message. Please try again later.' });
+  });
+
+  webhookReq.write(payload);
+  webhookReq.end();
+});
+
+// POST /api/intake - Automation intake form; forwards intake data to n8n workflow webhook (N8N_WEBHOOK_AUTOMATION_INTAKE). Payload unchanged.
+app.post('/api/intake', (req, res) => {
+  const webhookUrl = config.webhooks.n8nAutomationIntake;
+  if (!webhookUrl) {
+    return res.status(503).json({ success: false, message: 'Intake form is not configured.' });
+  }
+
+  const { name, email, company, answers } = req.body || {};
+  if (!name || !email) {
+    return res.status(400).json({ success: false, message: 'Name and email are required.' });
+  }
+
+  let parsedUrl;
+  try {
+    parsedUrl = new URL(webhookUrl);
+  } catch (e) {
+    logger.error('Invalid intake webhook URL', { error: e.message });
+    return res.status(500).json({ success: false, message: 'Intake form is misconfigured.' });
+  }
+
+  const payload = JSON.stringify({
+    name: String(name).trim(),
+    email: String(email).trim(),
+    company: (company && String(company).trim()) || '',
+    answers: answers && typeof answers === 'object' ? answers : {},
+    source: 'logivex-automation-intake',
+    submittedAt: new Date().toISOString()
+  });
+
+  const isHttps = parsedUrl.protocol === 'https:';
+  const client = isHttps ? https : http;
+  const options = {
+    hostname: parsedUrl.hostname,
+    port: parsedUrl.port || (isHttps ? 443 : 80),
+    path: parsedUrl.pathname + (parsedUrl.search || ''),
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(payload)
+    }
+  };
+
+  const webhookReq = client.request(options, webhookRes => {
+    let body = '';
+    webhookRes.on('data', chunk => { body += chunk; });
+    webhookRes.on('end', () => {
+      const ok = webhookRes.statusCode >= 200 && webhookRes.statusCode < 300;
+      if (!ok) {
+        logger.error('n8n intake webhook error', { status: webhookRes.statusCode, body });
+      }
+      return res.status(ok ? 200 : 502).json({
+        success: ok,
+        message: ok ? 'Thanks! Our team will review your workflow and get back to you shortly.' : 'Something went wrong. Please try again later.'
+      });
+    });
+  });
+
+  webhookReq.on('error', err => {
+    logger.error('n8n intake webhook request error', { error: err.message });
+    return res.status(502).json({ success: false, message: 'Unable to submit. Please try again later.' });
+  });
+
+  webhookReq.write(payload);
+  webhookReq.end();
 });
 
 // POST /api/extract-order - Extract transport order from email text (AI + fallback)
@@ -635,6 +772,9 @@ app.get('/api/routing/carriers/:id', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server is running at http://localhost:${PORT}`);
+  if (process.env.NODEMON) {
+    console.log('🔁 Server restarted by nodemon');
+  }
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
 

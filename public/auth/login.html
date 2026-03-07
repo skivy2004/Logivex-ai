@@ -8,16 +8,18 @@
     <link rel="stylesheet" href="/auth/auth.css" />
   </head>
   <body class="auth-page">
-    <header class="site-header header-visible">
+    <header class="site-header site-header--website header-visible">
       <div class="dh-container header-inner">
         <a href="/" class="logo" style="text-decoration: none;">
           <div class="logo-mark">Lx</div>
           <div class="logo-text">Logivex</div>
         </a>
-        <nav class="main-nav">
+        <nav class="main-nav main-nav--website">
           <a href="/">Home</a>
+          <a href="/#demos">Demos</a>
+          <a href="/#contact" data-contact-open>Contact</a>
           <a href="/signup">Sign up</a>
-          <a href="/#contact" class="nav-cta">Contact</a>
+          <a href="/login" class="nav-cta">Log in</a>
         </nav>
       </div>
     </header>
@@ -58,6 +60,7 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/js/contact-modal.js"></script>
     <script src="/auth/login.js"></script>
   </body>
 </html>

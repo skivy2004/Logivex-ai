@@ -29,11 +29,13 @@ Regards`;
   const routePickupLabel = document.getElementById('route-pickup-label');
   const routeDeliveryLabel = document.getElementById('route-delivery-label');
   const routeDistance = document.getElementById('route-distance');
+  const outputPlaceholder = document.getElementById('output-placeholder');
 
   let lastExtractedData = null;
   let showingJson = false;
   let mapsLoaded = false;
   let mapsCallback = null;
+  let extractionAnimationPlayed = false;
 
   function setMessage(text, type) {
     formMessage.textContent = text || '';
@@ -45,7 +47,7 @@ Regards`;
     extractBtn.disabled = loading;
     if (loading) {
       extractBtn.classList.add('loading');
-      extractBtn.innerHTML = '<span class="spinner" aria-hidden="true"></span> Extracting…';
+      extractBtn.innerHTML = '<span class="spinner" aria-hidden="true"></span> Analyzing email...';
     } else {
       extractBtn.classList.remove('loading');
       extractBtn.innerHTML = 'Extract Order';
@@ -181,8 +183,12 @@ Regards`;
     }
   }
 
+  var layoutEl = document.getElementById('email-demo-layout');
+  var resultPanelEl = document.querySelector('.email-demo-col-output.result-panel');
+
   function showResult(data) {
     lastExtractedData = data;
+    if (outputPlaceholder) outputPlaceholder.hidden = true;
     if (!resultSection || !orderCardContainer) return;
     const clean = data && typeof data === 'object' ? data : {};
     renderOrderCard(clean);
@@ -193,15 +199,29 @@ Regards`;
     orderCardContainer.hidden = false;
     resultSection.hidden = false;
     resultSection.classList.add('result-visible');
+
+    if (!extractionAnimationPlayed && layoutEl) {
+      extractionAnimationPlayed = true;
+      layoutEl.classList.add('show-results');
+      if (resultPanelEl) {
+        setTimeout(function () {
+          resultPanelEl.classList.add('result-panel-visible');
+        }, 350);
+      }
+    }
   }
 
   function hideResult() {
+    if (outputPlaceholder) outputPlaceholder.hidden = false;
     if (resultSection) {
       resultSection.hidden = true;
       resultSection.classList.remove('result-visible');
     }
     if (routeSection) routeSection.hidden = true;
     lastExtractedData = null;
+    if (extractionAnimationPlayed) return;
+    if (layoutEl) layoutEl.classList.remove('show-results');
+    if (resultPanelEl) resultPanelEl.classList.remove('result-panel-visible');
   }
 
   function copyOrder() {

@@ -1,10 +1,26 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // Smooth scroll fallback for anchor links
+  // Header: show on scroll down, hide at top
+  const siteHeader = document.querySelector('.site-header');
+  const SCROLL_THRESHOLD = 10;
+
+  function updateHeaderVisibility() {
+    if (!siteHeader) return;
+    if (window.scrollY > SCROLL_THRESHOLD) {
+      siteHeader.classList.add('header-visible');
+    } else {
+      siteHeader.classList.remove('header-visible');
+    }
+  }
+
+  window.addEventListener('scroll', updateHeaderVisibility, { passive: true });
+  updateHeaderVisibility(); // set initial state
+
+  // Smooth scroll fallback for anchor links (except Contact – opens modal)
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    const href = anchor.getAttribute('href') || '';
+    if (href === '#contact' || href.endsWith('#contact')) return;
     anchor.addEventListener('click', function (e) {
-      const href = this.getAttribute('href');
       if (href === '#') return;
-      
       const target = document.querySelector(href);
       if (target) {
         e.preventDefault();

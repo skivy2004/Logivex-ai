@@ -4,124 +4,142 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AI Email → Transport Order Extraction | Logivex</title>
+    <link rel="stylesheet" href="/demo-hub.css" />
     <link rel="stylesheet" href="styles.css" />
   </head>
-  <body>
-    <header class="site-header">
-      <div class="container header-inner">
-        <a href="/" class="logo">
-          <span class="logo-mark">Lx</span>
-          <span class="logo-text">Logivex</span>
+  <body class="demo-page">
+    <header class="site-header site-header--website">
+      <div class="dh-container header-inner">
+        <a href="/" class="logo" style="text-decoration: none;">
+          <div class="logo-mark">Lx</div>
+          <div class="logo-text">Logivex</div>
         </a>
-        <nav class="main-nav">
+        <nav class="main-nav main-nav--website">
           <a href="/">Home</a>
           <a href="/#demos">Demos</a>
-          <a href="/#contact" class="nav-cta">Contact</a>
+          <a href="/#contact" data-contact-open>Contact</a>
+          <span id="auth-nav" class="nav-auth-slot"></span>
         </nav>
       </div>
     </header>
 
-    <main class="page">
-      <section class="hero">
-        <div class="container hero-inner">
-          <h1 class="hero-title">AI Email → Transport Order Extraction</h1>
-          <p class="hero-subtitle">
-            Paste a logistics email and let AI convert it into a structured transport order in seconds.
-          </p>
-        </div>
-      </section>
-
-      <section class="features-intro">
-        <div class="container">
-          <div class="features-intro-grid">
-            <div class="feature-blurb">
-              <span class="feature-blurb-icon">✉️</span>
-              <h3>Paste any transport email</h3>
-              <p>Forward or paste customer emails—no templates required.</p>
+    <main class="email-demo-page">
+      <!-- Demo tool: first section under navbar -->
+      <section class="email-demo-demo-section" id="try-demo">
+        <div class="dh-container">
+          <div id="email-demo-layout" class="email-demo-wrapper">
+            <div class="email-demo-left">
+              <div class="email-demo-col email-demo-col-input">
+              <div class="demo-card">
+                <div class="demo-input-group">
+                  <label for="email-input" class="input-label center-title">Transport email</label>
+                  <textarea
+                    id="email-input"
+                    class="email-textarea"
+                    name="email"
+                    rows="12"
+                    placeholder="Paste your transport request email here..."
+                  ></textarea>
+                </div>
+                <div class="demo-actions center-buttons">
+                  <button type="button" id="extract-btn" class="btn extract-btn">Extract Order</button>
+                  <button type="button" id="example-btn" class="btn btn-secondary">Use example email</button>
+                  <button type="button" id="clear-btn" class="btn btn-ghost">Clear</button>
+                </div>
+                <div id="form-message" class="form-message" role="alert" aria-live="polite"></div>
+                <div id="ai-processing-section" class="ai-processing-section" hidden aria-live="polite">
+                  <h3 class="ai-processing-title">Analyzing email...</h3>
+                  <div class="ai-processing-steps">
+                    <div id="step-1" class="ai-step"><span class="ai-step-icon" aria-hidden="true"></span><span class="ai-step-label">Analyzing email...</span></div>
+                    <div id="step-2" class="ai-step"><span class="ai-step-icon" aria-hidden="true"></span><span class="ai-step-label">Extracting pickup location</span></div>
+                    <div id="step-3" class="ai-step"><span class="ai-step-icon" aria-hidden="true"></span><span class="ai-step-label">Detecting delivery address</span></div>
+                    <div id="step-4" class="ai-step"><span class="ai-step-icon" aria-hidden="true"></span><span class="ai-step-label">Structuring transport data</span></div>
+                    <div id="step-5" class="ai-step ai-step-complete"><span class="ai-step-icon" aria-hidden="true"></span><span class="ai-step-label">Completed</span></div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="feature-blurb">
-              <span class="feature-blurb-icon">🤖</span>
-              <h3>AI extracts key fields</h3>
-              <p>Pickup, delivery, cargo, weight and timing are extracted automatically.</p>
+          </div>
+          <div class="email-demo-right">
+            <div class="email-demo-col email-demo-col-output result-panel">
+              <div class="demo-card email-demo-output-card">
+                <div id="output-placeholder" class="email-demo-output-placeholder">
+                  <p>Paste an email on the left and click <strong>Extract Order</strong> to see the structured result here.</p>
+                </div>
+                <div id="result-section" class="result-section" hidden>
+                  <div class="result-header">
+                    <h2 class="result-title">Extracted transport order</h2>
+                    <div class="result-actions">
+                      <button type="button" id="copy-btn" class="btn btn-ghost btn-sm">Copy order</button>
+                    </div>
+                  </div>
+                  <div id="order-card-container" class="order-card-container"></div>
+                  <div id="route-section" class="route-section" hidden>
+                    <h3 class="route-title">Transport Route</h3>
+                    <p id="route-text" class="route-text"></p>
+                    <div id="route-map" class="route-map" aria-hidden="true"></div>
+                    <div id="route-fallback" class="route-fallback" hidden>
+                      <div class="route-fallback-line"></div>
+                      <div class="route-fallback-labels">
+                        <span id="route-pickup-label" class="route-label"></span>
+                        <span class="route-arrow" aria-hidden="true">→</span>
+                        <span id="route-delivery-label" class="route-label"></span>
+                      </div>
+                    </div>
+                    <p id="route-distance" class="route-distance"></p>
+                  </div>
+                  <pre id="result-json" class="result-json" hidden></pre>
+                </div>
+              </div>
             </div>
-            <div class="feature-blurb">
-              <span class="feature-blurb-icon">📋</span>
-              <h3>Structured order data</h3>
-              <p>Use the result in your TMS, send to webhooks or copy as JSON.</p>
             </div>
           </div>
         </div>
       </section>
 
-      <section class="demo-section">
-        <div class="container">
-          <div class="demo-card">
-            <div class="demo-input-group">
-              <label for="email-input" class="input-label">Transport email</label>
-              <textarea
-                id="email-input"
-                class="email-textarea"
-                name="email"
-                rows="10"
-                placeholder="Paste your transport request email here..."
-              ></textarea>
-            </div>
-
-            <div class="demo-actions">
-              <button type="button" id="extract-btn" class="btn extract-btn">Extract Order</button>
-              <button type="button" id="example-btn" class="btn btn-secondary">Use example email</button>
-              <button type="button" id="clear-btn" class="btn btn-ghost">Clear</button>
-            </div>
-
-            <div id="form-message" class="form-message" role="alert" aria-live="polite"></div>
-
-            <div id="ai-processing-section" class="ai-processing-section" hidden aria-live="polite">
-              <h3 class="ai-processing-title">AI Processing</h3>
-              <div class="ai-processing-steps">
-                <div id="step-1" class="ai-step"><span class="ai-step-icon" aria-hidden="true"></span><span class="ai-step-label">Receiving email</span></div>
-                <div id="step-2" class="ai-step"><span class="ai-step-icon" aria-hidden="true"></span><span class="ai-step-label">AI analyzing email content</span></div>
-                <div id="step-3" class="ai-step"><span class="ai-step-icon" aria-hidden="true"></span><span class="ai-step-label">Extracting transport information</span></div>
-                <div id="step-4" class="ai-step"><span class="ai-step-icon" aria-hidden="true"></span><span class="ai-step-label">Creating structured transport order</span></div>
-                <div id="step-5" class="ai-step ai-step-complete"><span class="ai-step-icon" aria-hidden="true"></span><span class="ai-step-label">Completed</span></div>
-              </div>
-            </div>
-
-            <div id="result-section" class="result-section" hidden>
-              <div class="result-header">
-                <h2 class="result-title">Extracted transport order</h2>
-                <div class="result-actions">
-                  <button type="button" id="copy-btn" class="btn btn-ghost btn-sm">Copy order</button>
-                </div>
-              </div>
-              <div id="order-card-container" class="order-card-container"></div>
-              <div id="route-section" class="route-section" hidden>
-                <h3 class="route-title">Transport Route</h3>
-                <p id="route-text" class="route-text"></p>
-                <div id="route-map" class="route-map" aria-hidden="true"></div>
-                <div id="route-fallback" class="route-fallback" hidden>
-                  <div class="route-fallback-line"></div>
-                  <div class="route-fallback-labels">
-                    <span id="route-pickup-label" class="route-label"></span>
-                    <span class="route-arrow" aria-hidden="true">→</span>
-                    <span id="route-delivery-label" class="route-label"></span>
-                  </div>
-                </div>
-                <p id="route-distance" class="route-distance"></p>
-              </div>
-              <pre id="result-json" class="result-json" hidden></pre>
-            </div>
+      <!-- Benefits -->
+      <section class="email-demo-benefits-section">
+        <div class="dh-container">
+          <span class="section-label">Benefits</span>
+          <h2 class="section-title email-demo-benefits-title">Why use AI extraction</h2>
+          <div class="email-demo-benefits-grid">
+            <article class="email-demo-benefit-card">
+              <span class="email-demo-benefit-icon" aria-hidden="true">⚡</span>
+              <h3>Automatic order extraction</h3>
+              <p>Turn free-form emails into structured data without manual copy-paste.</p>
+            </article>
+            <article class="email-demo-benefit-card">
+              <span class="email-demo-benefit-icon" aria-hidden="true">🚀</span>
+              <h3>Faster operations</h3>
+              <p>Reduce time from email to order in your TMS or workflow.</p>
+            </article>
+            <article class="email-demo-benefit-card">
+              <span class="email-demo-benefit-icon" aria-hidden="true">✏️</span>
+              <h3>Less manual data entry</h3>
+              <p>AI fills pickup, delivery, cargo and weight so your team can focus on exceptions.</p>
+            </article>
+            <article class="email-demo-benefit-card">
+              <span class="email-demo-benefit-icon" aria-hidden="true">🔗</span>
+              <h3>AI-powered logistics</h3>
+              <p>Connect to n8n, your TMS or APIs with one structured payload.</p>
+            </article>
           </div>
         </div>
       </section>
     </main>
 
-    <footer class="footer">
-      <div class="container footer-inner">
+    <footer class="footer email-demo-footer">
+      <div class="dh-container footer-inner">
         <p class="footer-brand">Logivex</p>
         <p class="footer-meta">AI automation for logistics</p>
       </div>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/demo-hub.js"></script>
+    <script src="/auth-nav.js"></script>
+    <script src="/js/contact-modal.js"></script>
     <script src="script.js"></script>
+    <script src="typing.js"></script>
   </body>
 </html>

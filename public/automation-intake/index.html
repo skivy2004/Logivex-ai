@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Logistics Automation Intake | Logivex</title>
+    <link rel="stylesheet" href="/demo-hub.css" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="demo-page">
+    <header class="site-header site-header--website">
+      <div class="dh-container header-inner">
+        <a href="/" class="logo" style="text-decoration: none;">
+          <div class="logo-mark">Lx</div>
+          <div class="logo-text">Logivex</div>
+        </a>
+        <nav class="main-nav main-nav--website">
+          <a href="/">Home</a>
+          <a href="/#demos">Demos</a>
+          <a href="/#contact" data-contact-open>Contact</a>
+          <span id="auth-nav" class="nav-auth-slot"></span>
+        </nav>
+      </div>
+    </header>
+
+    <main class="intake-page">
+      <section class="intake-hero">
+        <div class="dh-container">
+          <h1 class="intake-title">Logistics Automation Intake</h1>
+          <p class="intake-desc">Help us understand your logistics workflow so we can suggest the best automation solution.</p>
+        </div>
+      </section>
+
+      <section class="intake-section">
+        <div class="dh-container">
+          <div id="intake-form-wrap" class="intake-card">
+            <form id="intake-form" class="intake-form">
+              <div class="intake-field">
+                <label for="intake-name">Name</label>
+                <input type="text" id="intake-name" name="name" required autocomplete="name" />
+              </div>
+              <div class="intake-field">
+                <label for="intake-email">Email</label>
+                <input type="email" id="intake-email" name="email" required autocomplete="email" />
+              </div>
+              <div class="intake-field">
+                <label for="intake-company">Company</label>
+                <input type="text" id="intake-company" name="company" autocomplete="organization" />
+              </div>
+              <div id="intake-questions"></div>
+              <p id="intake-status" class="intake-status" role="status" aria-live="polite"></p>
+              <div class="intake-actions">
+                <button type="submit" class="btn btn-primary" id="intake-submit">Submit</button>
+              </div>
+            </form>
+          </div>
+
+          <div id="intake-success" class="intake-success" hidden>
+            <div class="intake-success-card">
+              <p class="intake-success-message">Thanks! Our team will review your workflow and get back to you shortly.</p>
+              <a href="/#contact" class="btn btn-primary" data-contact-open>Book a demo call</a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="dh-container">
+        <p class="footer-bottom">&copy; <span id="footer-year"></span> Logivex. All rights reserved.</p>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/demo-hub.js"></script>
+    <script src="/auth-nav.js"></script>
+    <script src="/js/contact-modal.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>

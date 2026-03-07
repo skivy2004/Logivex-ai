@@ -3,15 +3,16 @@
 
 const requiredEnvVars = [
   'GOOGLE_MAPS_API_KEY',
-  'MAKE_WEBHOOK_TRANSPORT_QUOTE'
+  'N8N_WEBHOOK_TRANSPORT_QUOTE'
 ];
 
 const optionalEnvVars = [
-  'MAKE_WEBHOOK_EMAIL_AUTOMATION',
-  'MAKE_WEBHOOK_EMAIL',
-  'MAKE_WEBHOOK_CONTACT_FORM', 
-  'MAKE_WEBHOOK_DEMO_REQUEST',
-  'MAKE_WEBHOOK_CRM_AI',
+  'N8N_WEBHOOK_CONTACT',
+  'N8N_WEBHOOK_AUTOMATION_INTAKE',
+  'N8N_WEBHOOK_EMAIL',
+  'N8N_WEBHOOK_EMAIL_AUTOMATION',
+  'N8N_WEBHOOK_DEMO_REQUEST',
+  'N8N_WEBHOOK_CRM_AI',
   'OPENAI_API_KEY',
   'SAMPLE_EMAIL_PROMPT',
   'SUPABASE_URL',
@@ -62,14 +63,15 @@ function validateEnvironment() {
   console.log('\n✅ Environment configuration validated successfully');
   console.log(`   - Server Port: ${process.env.PORT || 3000}`);
   console.log(`   - Google Maps API: ${process.env.GOOGLE_MAPS_API_KEY ? '✓ Configured' : '✗ Missing'}`);
-  console.log(`   - Transport Quote Webhook: ${process.env.MAKE_WEBHOOK_TRANSPORT_QUOTE ? '✓ Configured' : '✗ Missing'}`);
-  console.log(`   - Email Automation Webhook: ${process.env.MAKE_WEBHOOK_EMAIL_AUTOMATION ? '✓ Configured' : 'Optional'}`);
-  console.log(`   - Contact Form Webhook: ${process.env.MAKE_WEBHOOK_CONTACT_FORM ? '✓ Configured' : 'Optional'}`);
-  console.log(`   - Demo Request Webhook: ${process.env.MAKE_WEBHOOK_DEMO_REQUEST ? '✓ Configured' : 'Optional'}`);
-  console.log(`   - CRM AI Webhook: ${process.env.MAKE_WEBHOOK_CRM_AI ? '✓ Configured' : 'Optional'}`);
+  console.log(`   - Transport Quote Webhook (n8n): ${process.env.N8N_WEBHOOK_TRANSPORT_QUOTE ? '✓ Configured' : '✗ Missing'}`);
+  console.log(`   - Contact Webhook (n8n): ${process.env.N8N_WEBHOOK_CONTACT ? '✓ Configured' : 'Optional'}`);
+  console.log(`   - Automation Intake Webhook (n8n): ${process.env.N8N_WEBHOOK_AUTOMATION_INTAKE ? '✓ Configured' : 'Optional'}`);
+  console.log(`   - Email extraction Webhook (n8n): ${process.env.N8N_WEBHOOK_EMAIL ? '✓ Configured' : 'Optional'}`);
+  console.log(`   - Email Automation Webhook (n8n): ${process.env.N8N_WEBHOOK_EMAIL_AUTOMATION ? '✓ Configured' : 'Optional'}`);
+  console.log(`   - Demo Request Webhook (n8n): ${process.env.N8N_WEBHOOK_DEMO_REQUEST ? '✓ Configured' : 'Optional'}`);
+  console.log(`   - CRM AI Webhook (n8n): ${process.env.N8N_WEBHOOK_CRM_AI ? '✓ Configured' : 'Optional'}`);
   console.log(`   - OpenAI API: ${process.env.OPENAI_API_KEY ? '✓ Configured' : 'Optional (demo mode)'}`);
   console.log(`   - Sample email prompt: ${process.env.SAMPLE_EMAIL_PROMPT ? '✓ Set' : 'Optional (email-demo AI example)'}`);
-  console.log(`   - Email extraction webhook: ${process.env.MAKE_WEBHOOK_EMAIL ? '✓ Configured' : 'Optional'}`);
   console.log(`   - Supabase: ${process.env.SUPABASE_URL ? '✓ Configured' : 'Optional (auth & features)'}`);
   console.log('');
 }
@@ -82,12 +84,13 @@ function getConfig() {
     supabaseUrl: process.env.SUPABASE_URL || '',
     supabaseAnonKey: process.env.SUPABASE_ANON_KEY || '',
     webhooks: {
-      transportQuote: process.env.MAKE_WEBHOOK_TRANSPORT_QUOTE,
-      email: process.env.MAKE_WEBHOOK_EMAIL,
-      emailAutomation: process.env.MAKE_WEBHOOK_EMAIL_AUTOMATION,
-      contactForm: process.env.MAKE_WEBHOOK_CONTACT_FORM,
-      demoRequest: process.env.MAKE_WEBHOOK_DEMO_REQUEST,
-      crmAi: process.env.MAKE_WEBHOOK_CRM_AI
+      n8nTransportQuote: process.env.N8N_WEBHOOK_TRANSPORT_QUOTE,
+      n8nContact: process.env.N8N_WEBHOOK_CONTACT,
+      n8nAutomationIntake: process.env.N8N_WEBHOOK_AUTOMATION_INTAKE,
+      n8nEmail: process.env.N8N_WEBHOOK_EMAIL,
+      n8nEmailAutomation: process.env.N8N_WEBHOOK_EMAIL_AUTOMATION,
+      n8nDemoRequest: process.env.N8N_WEBHOOK_DEMO_REQUEST,
+      n8nCrmAi: process.env.N8N_WEBHOOK_CRM_AI
     }
   };
 }

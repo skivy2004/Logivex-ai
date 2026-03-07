@@ -568,6 +568,92 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Initialize cargo management
   initCargoManagement();
+
+  // Admin Demo Mode: show "Generate Demo Quote" only for logged-in admins
+  (function initAdminDemoMode() {
+    const adminSection = document.getElementById('admin-demo-section');
+    const demoBtn = document.getElementById('demo-prefill-btn');
+    if (!adminSection || !demoBtn) return;
+
+    function applyDemoQuoteToForm(demoData, userEmail, userName) {
+      const pickupEl = document.getElementById('pickupAddress');
+      const dropoffEl = document.getElementById('dropoffAddress');
+      const dateEl = document.getElementById('date');
+      const notesEl = document.getElementById('notes');
+      const emailEl = document.getElementById('customerEmail');
+      const nameEl = document.getElementById('customerName');
+      if (pickupEl) pickupEl.value = demoData.pickupAddress || '';
+      if (dropoffEl) dropoffEl.value = demoData.dropoffAddress || '';
+      if (dateEl) dateEl.value = demoData.date || '';
+      if (notesEl) notesEl.value = demoData.notes || '';
+      if (emailEl) emailEl.value = userEmail || '';
+      if (nameEl) nameEl.value = userName || 'Demo Admin';
+      logivexPickupPlace = null;
+      logivexDropoffPlace = null;
+
+      const container = document.getElementById('cargo-items-container');
+      if (container && demoData.cargoItems && demoData.cargoItems.length > 0) {
+        let rows = container.querySelectorAll('.cargo-row');
+        while (rows.length > 1) {
+          removeCargoRow(rows[rows.length - 1]);
+          rows = container.querySelectorAll('.cargo-row');
+        }
+        const firstRow = rows[0];
+        if (firstRow) {
+          const typeSelect = firstRow.querySelector('.cargo-type-select');
+          const qtyInput = firstRow.querySelector('input[type="number"]');
+          if (typeSelect) typeSelect.value = demoData.cargoItems[0].type || 'pallets';
+          if (qtyInput) qtyInput.value = String(demoData.cargoItems[0].quantity || 1);
+        }
+        for (let i = 1; i < demoData.cargoItems.length; i++) {
+          addCargoRow();
+          rows = container.querySelectorAll('.cargo-row');
+          const lastRow = rows[rows.length - 1];
+          if (lastRow) {
+            const typeSelect = lastRow.querySelector('.cargo-type-select');
+            const qtyInput = lastRow.querySelector('input[type="number"]');
+            if (typeSelect) typeSelect.value = demoData.cargoItems[i].type || 'pallets';
+            if (qtyInput) qtyInput.value = String(demoData.cargoItems[i].quantity || 1);
+          }
+        }
+        updateRemoveButtons();
+        updateOtherDescriptionVisibility();
+      }
+      refreshDistanceAndPrice();
+      updateQuoteSummary();
+    }
+
+    demoBtn.addEventListener('click', () => {
+      if (typeof window.generateDemoQuote !== 'function') return;
+      const demoData = window.generateDemoQuote();
+      const userEmail = window.__logivexAdminDemoEmail;
+      const userName = window.__logivexAdminDemoName;
+      applyDemoQuoteToForm(demoData, userEmail, userName);
+    });
+
+    fetch('/api/config')
+      .then((r) => r.json())
+      .then((config) => {
+        if (!config.supabaseUrl || !config.supabaseAnonKey || !window.supabase || !window.supabase.createClient) return null;
+        const supabase = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
+        return supabase.auth.getSession().then(({ data: { session } }) => ({ session, supabase }));
+      })
+      .then((result) => {
+        if (!result || !result.session) return null;
+        const token = result.session.access_token;
+        return fetch('/api/me', { headers: { Authorization: 'Bearer ' + token } })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((data) => ({ data, session: result.session }));
+      })
+      .then((result) => {
+        if (!result || !result.data || !result.data.user) return;
+        if (result.data.user.role !== 'admin') return;
+        adminSection.style.display = 'block';
+        window.__logivexAdminDemoEmail = result.session.user.email || '';
+        window.__logivexAdminDemoName = result.session.user.user_metadata?.name || result.session.user.user_metadata?.full_name || 'Demo Admin';
+      })
+      .catch(() => {});
+  })();
 });
 
 // Called by the Google Maps script via the `callback` parameter.
