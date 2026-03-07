@@ -73,8 +73,9 @@ async function handleProfile(req, res) {
 
   const { id } = auth.authUser;
   const email = auth.authUser.email || '';
+  const role = auth.userProfile && auth.userProfile.role ? auth.userProfile.role : 'user';
   const { error } = await supabase.from('users').upsert(
-    { id, name, email, role: 'user' },
+    { id, name, email, role },
     { onConflict: 'id' }
   );
 

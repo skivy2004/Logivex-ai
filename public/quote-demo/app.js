@@ -647,6 +647,7 @@ document.addEventListener('DOMContentLoaded', () => {
       })
       .then((result) => {
         if (!result || !result.data || !result.data.user) return;
+        console.log('Current user role:', result.data.user.role);
         if (result.data.user.role !== 'admin') return;
         adminSection.style.display = 'block';
         window.__logivexAdminDemoEmail = result.session.user.email || '';

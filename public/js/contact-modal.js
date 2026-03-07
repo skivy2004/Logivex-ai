@@ -172,6 +172,7 @@
         .then(function (result) {
           if (!result || !result.data || !result.data.user) return;
           var role = result.data.user.role;
+          console.log('Current user role:', role);
           var isAdmin = role === 'admin' || (result.session.user && result.session.user.user_metadata && result.session.user.user_metadata.role === 'admin');
           if (!isAdmin) return;
           adminAutofillBtn.style.display = 'inline-flex';
