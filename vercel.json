@@ -1,0 +1,60 @@
+{
+  "redirects": [
+    {
+      "source": "/demos",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/extract-order-demo",
+      "destination": "/email-demo",
+      "permanent": false
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/login",
+      "destination": "/auth/login.html"
+    },
+    {
+      "source": "/signup",
+      "destination": "/auth/signup.html"
+    },
+    {
+      "source": "/admin/dashboard",
+      "destination": "/auth/admin.html"
+    },
+    {
+      "source": "/quote-demo",
+      "destination": "/quote-demo/index.html"
+    },
+    {
+      "source": "/email-demo",
+      "destination": "/email-demo/index.html"
+    },
+    {
+      "source": "/crm-demo",
+      "destination": "/crm-demo/index.html"
+    },
+    {
+      "source": "/routing-demo",
+      "destination": "/routing-demo/index.html"
+    },
+    {
+      "source": "/logistics-dashboard",
+      "destination": "/logistics-dashboard/index.html"
+    },
+    {
+      "source": "/automation-intake",
+      "destination": "/automation-intake/index.html"
+    },
+    {
+      "source": "/api/features/:id",
+      "destination": "/api/features?id=:id"
+    },
+    {
+      "source": "/api/routing/carriers/:id",
+      "destination": "/api/routing/carriers?id=:id"
+    }
+  ]
+}
