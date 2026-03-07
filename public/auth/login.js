@@ -20,6 +20,28 @@
     return user && user.role === 'admin' ? '/admin/dashboard' : '/';
   }
 
+  function initSupabaseFromConfig(config) {
+    if (!config || !config.supabaseUrl || !config.supabaseAnonKey) {
+      console.error('Login config missing Supabase values:', config);
+      setMessage('Supabase auth keys are missing from /api/config.', 'error');
+      return;
+    }
+
+    if (!window.supabase || !window.supabase.createClient) {
+      console.error('Supabase browser SDK not loaded.');
+      setMessage('Supabase browser SDK failed to load.', 'error');
+      return;
+    }
+
+    var createClient = window.supabase.createClient;
+    if (!createClient) {
+      setMessage('Supabase client factory is unavailable.', 'error');
+      return;
+    }
+
+    supabase = createClient(config.supabaseUrl, config.supabaseAnonKey);
+  }
+
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
     var email = document.getElementById('email').value.trim();
@@ -64,12 +86,12 @@
   fetch('/api/config')
     .then(function (r) { return r.json(); })
     .then(function (config) {
-      if (config.supabaseUrl && config.supabaseAnonKey && window.supabase) {
-        var createClient = window.supabase.createClient;
-        if (createClient) supabase = createClient(config.supabaseUrl, config.supabaseAnonKey);
-      }
+      initSupabaseFromConfig(config);
     })
-    .catch(function () {});
+    .catch(function (err) {
+      console.error('Failed to load /api/config for login:', err);
+      setMessage('Failed to load authentication configuration.', 'error');
+    });
 
   var yearEl = document.getElementById('footer-year');
   if (yearEl) yearEl.textContent = new Date().getFullYear();

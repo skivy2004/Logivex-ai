@@ -17,11 +17,15 @@
     }
   }
 
+  function setLoggedOutLinks() {
+    setLinks('<a href="/login">Log in</a><a href="/signup">Sign up</a>');
+  }
+
   fetch('/api/config')
     .then(function (r) { return r.json(); })
     .then(function (config) {
       if (!config.supabaseUrl || !config.supabaseAnonKey || !window.supabase || !window.supabase.createClient) {
-        setLinks('');
+        setLoggedOutLinks();
         return;
       }
       authClient = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
@@ -29,7 +33,7 @@
         var data = _ref.data;
         var session = data && data.session;
         if (!session || !session.access_token) {
-          setLinks('<a href="/login">Log in</a><a href="/signup">Sign up</a>');
+          setLoggedOutLinks();
           return;
         }
         fetch('/api/me', { headers: { 'Authorization': 'Bearer ' + session.access_token } })
@@ -44,13 +48,13 @@
             }
           })
           .catch(function () {
-            setLinks('<a href="/login">Log in</a><a href="/signup">Sign up</a>');
+            setLoggedOutLinks();
           });
       }).catch(function () {
-        setLinks('<a href="/login">Log in</a><a href="/signup">Sign up</a>');
+        setLoggedOutLinks();
       });
     })
     .catch(function () {
-      setLinks('');
+      setLoggedOutLinks();
     });
 })();
