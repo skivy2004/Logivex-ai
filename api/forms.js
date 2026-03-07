@@ -1,13 +1,10 @@
-import { createRequire } from 'node:module';
-
-const require = createRequire(import.meta.url);
 const { calculateTransportPrice } = require('../pricing.js');
 const { getConfig } = require('../config/env.js');
 const webhookService = require('../services/webhook-service.js');
 const logger = require('../utils/logger.js');
 const { methodNotAllowed, readRequestBody } = require('../lib/serverless-utils.js');
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   try {
     const host = req?.headers?.host || 'localhost';
     const url = new URL(req?.url || '/', `http://${host}`);
@@ -32,7 +29,7 @@ export default async function handler(req, res) {
     logger.error('Forms handler error', { error: err.message });
     return res.status(500).json({ success: false, message: 'Internal server error.' });
   }
-}
+};
 
 async function handleQuote(req, res) {
   if (req.method !== 'POST') {

@@ -1,6 +1,3 @@
-import { createRequire } from 'node:module';
-
-const require = createRequire(import.meta.url);
 const demos = require('../data/demo-config.js');
 const { getConfig } = require('../config/env.js');
 const { getSupabaseAdmin } = require('../lib/supabaseClient.js');
@@ -31,7 +28,7 @@ async function getLocalDemos() {
   }
 }
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== 'GET') {
     return methodNotAllowed(res, ['GET']);
   }
@@ -68,4 +65,4 @@ export default async function handler(req, res) {
     logger.error('Demos API fetch error', { error: err.message });
     return res.status(200).json({ demos: await getLocalDemos() });
   }
-}
+};

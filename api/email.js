@@ -1,6 +1,3 @@
-import { createRequire } from 'node:module';
-
-const require = createRequire(import.meta.url);
 const { getConfig } = require('../config/env.js');
 const extractionService = require('../services/extraction-service.js');
 const distanceService = require('../services/distance-service.js');
@@ -9,7 +6,7 @@ const { sanitizeEmailText } = require('../utils/validation.js');
 const logger = require('../utils/logger.js');
 const { methodNotAllowed, readRequestBody, getQuery } = require('../lib/serverless-utils.js');
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   try {
     const host = req?.headers?.host || 'localhost';
     const url = new URL(req?.url || '/', `http://${host}`);
@@ -31,7 +28,7 @@ export default async function handler(req, res) {
     logger.error('Email handler error', { error: err.message });
     return res.status(500).json({ success: false, message: 'Internal server error.' });
   }
-}
+};
 
 async function handleExtractOrder(req, res) {
   if (req.method !== 'POST') {

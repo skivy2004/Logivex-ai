@@ -1,12 +1,9 @@
-import { createRequire } from 'node:module';
-
-const require = createRequire(import.meta.url);
 const { getSupabaseAdmin } = require('../lib/supabaseClient.js');
 const { requireAuthContext } = require('../lib/serverless-auth.js');
 const logger = require('../utils/logger.js');
 const { methodNotAllowed, readRequestBody } = require('../lib/serverless-utils.js');
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   try {
     const host = req?.headers?.host || 'localhost';
     const url = new URL(req?.url || '/', `http://${host}`);
@@ -27,7 +24,7 @@ export default async function handler(req, res) {
     logger.error('Account handler error', { error: err.message });
     return res.status(500).json({ success: false, message: 'Internal server error.' });
   }
-}
+};
 
 async function handleMe(req, res) {
   if (req.method !== 'GET') {

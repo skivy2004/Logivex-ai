@@ -1,13 +1,10 @@
-import { createRequire } from 'node:module';
-
-const require = createRequire(import.meta.url);
 const aiLeadExtraction = require('../services/ai-lead-extraction.js');
 const crmService = require('../services/crm-service.js');
 const { sanitizeEmailText } = require('../utils/validation.js');
 const logger = require('../utils/logger.js');
 const { methodNotAllowed, getQuery, readRequestBody } = require('../lib/serverless-utils.js');
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   try {
     const host = req?.headers?.host || 'localhost';
     const url = new URL(req?.url || '/', `http://${host}`);
@@ -31,7 +28,7 @@ export default async function handler(req, res) {
     logger.error('Leads route error', { error: err.message });
     return res.status(500).json({ success: false, message: 'Error fetching leads.' });
   }
-}
+};
 
 async function handleCreateLead(req, res) {
   if (req.method !== 'POST') {

@@ -1,13 +1,10 @@
-import { createRequire } from 'node:module';
-
-const require = createRequire(import.meta.url);
 const demos = require('../data/demo-config.js');
 const { getSupabaseAdmin } = require('../lib/supabaseClient.js');
 const { requireAdminContext } = require('../lib/serverless-auth.js');
 const logger = require('../utils/logger.js');
 const { methodNotAllowed, readRequestBody, getQuery } = require('../lib/serverless-utils.js');
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   const auth = await requireAdminContext(req);
   if (!auth.ok) {
     return res.status(auth.status).json(auth.body);
@@ -22,7 +19,7 @@ export default async function handler(req, res) {
   }
 
   return methodNotAllowed(res, ['GET', 'PATCH']);
-}
+};
 
 async function handleList(req, res) {
   try {

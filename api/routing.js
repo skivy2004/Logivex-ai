@@ -1,10 +1,7 @@
-import { createRequire } from 'node:module';
-
-const require = createRequire(import.meta.url);
 const routing = require('../routing.js');
 const { methodNotAllowed, readRequestBody, getQuery } = require('../lib/serverless-utils.js');
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   try {
     const host = req?.headers?.host || 'localhost';
     const url = new URL(req?.url || '/', `http://${host}`);
@@ -37,7 +34,7 @@ export default async function handler(req, res) {
     console.error('routing.js error:', err);
     return res.status(500).json({ success: false, message: 'Internal server error.' });
   }
-}
+};
 
 async function handleOptimize(req, res) {
   if (req.method !== 'POST') {
