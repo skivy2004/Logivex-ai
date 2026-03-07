@@ -64,6 +64,20 @@ body {
   padding: 0 24px;
 }
 
+/* Alias for demo pages that use .container (same layout as homepage) */
+.container {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* Demo pages: full-width main, consistent with homepage */
+body.demo-page main,
+body.dashboard-page main {
+  width: 100%;
+  min-height: 100vh;
+}
+
 /* ========================================
    Typography
    ======================================== */

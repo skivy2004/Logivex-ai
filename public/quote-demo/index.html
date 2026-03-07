@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Logivex – Instant Transport Quotes</title>
     <link rel="stylesheet" href="/demo-hub.css" />
-    <link rel="stylesheet" href="styles.css" />
-    <link rel="stylesheet" href="cargo-styles.css" />
+    <link rel="stylesheet" href="/quote-demo/styles.css" />
+    <link rel="stylesheet" href="/quote-demo/cargo-styles.css" />
   </head>
 <script>
 fetch("/api/config")
@@ -39,7 +39,7 @@ fetch("/api/config")
 
     <main class="page">
       <section class="hero">
-        <div class="container hero-inner">
+        <div class="dh-container hero-inner">
           <div class="hero-copy">
             <p class="hero-kicker" data-i18n="hero.kicker">Transport quotation platform</p>
             <h1 data-i18n="hero.title">Get an Instant Transport Quote</h1>
@@ -178,7 +178,7 @@ fetch("/api/config")
       </section>
 
       <section class="section" id="how-it-works">
-        <div class="container section-inner">
+        <div class="dh-container section-inner">
           <header class="section-header">
             <h2 data-i18n="how.title">How it works</h2>
             <p data-i18n="how.subtitle">From shipment details to scheduled transport in three clear steps.</p>
@@ -201,7 +201,7 @@ fetch("/api/config")
       </section>
 
       <section class="section section-summary" aria-label="Quote summary">
-        <div class="container section-inner">
+        <div class="dh-container section-inner">
           <header class="section-header">
             <h2 data-i18n="summary.title">Quote summary</h2>
           </header>
@@ -227,7 +227,7 @@ fetch("/api/config")
       </section>
 
       <section class="section section-trust" id="trust">
-        <div class="container section-inner">
+        <div class="dh-container section-inner">
           <header class="section-header">
             <h2 data-i18n="trust.title">Why logistics teams choose Logivex</h2>
           </header>
@@ -249,7 +249,7 @@ fetch("/api/config")
       </section>
 
       <footer class="footer">
-        <div class="container footer-inner">
+        <div class="dh-container footer-inner">
           <p class="footer-brand">Logivex</p>
           <p class="footer-meta">
             <span>Contact: </span
@@ -267,7 +267,7 @@ fetch("/api/config")
     <script src="/auth-nav.js"></script>
     <script src="/js/contact-modal.js"></script>
     <script src="/js/demoQuoteGenerator.js"></script>
-    <script src="app.js"></script>
+    <script src="/quote-demo/app.js"></script>
     <!-- Google Maps error handler -->
     <script>
       window.gm_authFailure = function() {
