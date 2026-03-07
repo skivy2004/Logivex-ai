@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return res.json();
     })
     .then(data => {
-      const demos = Array.isArray(data.demos) ? data.demos : (Array.isArray(data) ? data : []);
+      const demos = Array.isArray(data) ? data : (Array.isArray(data.demos) ? data.demos : []);
       if (!demos.length) {
         if (gridEl) {
           gridEl.textContent = 'No demos are configured yet.';

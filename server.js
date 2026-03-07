@@ -106,7 +106,7 @@ app.get('/api/demos', async (req, res) => {
     const response = await fetch(url);
     if (!response.ok) throw new Error(`Demos API returned ${response.status}`);
     const data = await response.json();
-    const list = Array.isArray(data.demos) ? data.demos : (Array.isArray(data) ? data : []);
+    const list = Array.isArray(data) ? data : (Array.isArray(data.demos) ? data.demos : []);
     return res.json({ demos: list });
   } catch (err) {
     logger.error('Demos API fetch error', { error: err.message });
