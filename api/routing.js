@@ -5,26 +5,38 @@ const routing = require('../routing.js');
 const { methodNotAllowed, readRequestBody, getQuery } = require('../lib/serverless-utils.js');
 
 export default async function handler(req, res) {
-  const query = getQuery(req);
-  const action = query.action || '';
+  try {
+    const host = req?.headers?.host || 'localhost';
+    const url = new URL(req?.url || '/', `http://${host}`);
+    const pathname = url.pathname.replace(/\/+$/, '');
+    const query = getQuery(req);
+    const action = query.action || '';
 
-  if (action === 'optimize') {
-    return handleOptimize(req, res);
+    if (action === 'optimize' || pathname.endsWith('/routing/optimize')) {
+      return handleOptimize(req, res);
+    }
+
+    if (action === 'evaluate' || pathname.endsWith('/routing/evaluate')) {
+      return handleEvaluate(req, res);
+    }
+
+    if (action === 'matchCarriers' || pathname.endsWith('/routing/match-carriers')) {
+      return handleMatchCarriers(req, res);
+    }
+
+    if (
+      action === 'carriers' ||
+      action === 'carrier' ||
+      pathname.endsWith('/routing/carriers')
+    ) {
+      return handleCarriers(req, res, query, pathname);
+    }
+
+    return res.status(404).json({ success: false, message: 'Routing action not found.' });
+  } catch (err) {
+    console.error('routing.js error:', err);
+    return res.status(500).json({ success: false, message: 'Internal server error.' });
   }
-
-  if (action === 'evaluate') {
-    return handleEvaluate(req, res);
-  }
-
-  if (action === 'matchCarriers') {
-    return handleMatchCarriers(req, res);
-  }
-
-  if (action === 'carriers' || action === 'carrier') {
-    return handleCarriers(req, res, query);
-  }
-
-  return res.status(404).json({ success: false, message: 'Routing action not found.' });
 }
 
 async function handleOptimize(req, res) {
@@ -162,14 +174,17 @@ async function handleMatchCarriers(req, res) {
   }
 }
 
-async function handleCarriers(req, res, query) {
+async function handleCarriers(req, res, query, pathname) {
   if (req.method !== 'GET') {
     return methodNotAllowed(res, ['GET']);
   }
 
   try {
-    if (query.id || query.action === 'carrier') {
-      return handleCarrierDetail(query.id, res);
+    const pathMatch = pathname.match(/\/routing\/carriers\/([^/]+)$/);
+    const carrierId = query.id || (pathMatch ? decodeURIComponent(pathMatch[1]) : '');
+
+    if (carrierId || query.action === 'carrier' || pathMatch) {
+      return handleCarrierDetail(carrierId, res);
     }
 
     return handleCarrierList(query, res);

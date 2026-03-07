@@ -11,12 +11,13 @@ export default async function handler(req, res) {
     const host = req?.headers?.host || 'localhost';
     const url = new URL(req?.url || '/', `http://${host}`);
     const action = url.searchParams.get('action');
+    const pathname = url.pathname.replace(/\/+$/, '');
 
-    if (action === 'me') {
+    if (action === 'me' || pathname.endsWith('/me')) {
       return handleMe(req, res);
     }
 
-    if (action === 'profile') {
+    if (action === 'profile' || pathname.endsWith('/profile')) {
       return handleProfile(req, res);
     }
 

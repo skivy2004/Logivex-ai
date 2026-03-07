@@ -5,25 +5,33 @@ const { calculateTransportPrice } = require('../pricing.js');
 const { getConfig } = require('../config/env.js');
 const webhookService = require('../services/webhook-service.js');
 const logger = require('../utils/logger.js');
-const { methodNotAllowed, readRequestBody, getQuery } = require('../lib/serverless-utils.js');
+const { methodNotAllowed, readRequestBody } = require('../lib/serverless-utils.js');
 
 export default async function handler(req, res) {
-  const query = getQuery(req);
-  const action = query.action || '';
+  try {
+    const host = req?.headers?.host || 'localhost';
+    const url = new URL(req?.url || '/', `http://${host}`);
+    const action = url.searchParams.get('action');
+    const pathname = url.pathname.replace(/\/+$/, '');
 
-  if (action === 'quote') {
-    return handleQuote(req, res);
+    if (action === 'quote' || pathname.endsWith('/quote')) {
+      return handleQuote(req, res);
+    }
+
+    if (action === 'contact' || pathname.endsWith('/contact')) {
+      return handleContact(req, res);
+    }
+
+    if (action === 'intake' || pathname.endsWith('/intake')) {
+      return handleIntake(req, res);
+    }
+
+    return res.status(404).json({ success: false, message: 'Form action not found.' });
+  } catch (err) {
+    console.error('forms.js error:', err);
+    logger.error('Forms handler error', { error: err.message });
+    return res.status(500).json({ success: false, message: 'Internal server error.' });
   }
-
-  if (action === 'contact') {
-    return handleContact(req, res);
-  }
-
-  if (action === 'intake') {
-    return handleIntake(req, res);
-  }
-
-  return res.status(404).json({ success: false, message: 'Form action not found.' });
 }
 
 async function handleQuote(req, res) {

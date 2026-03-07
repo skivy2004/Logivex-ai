@@ -8,22 +8,26 @@ const logger = require('../utils/logger.js');
 const { methodNotAllowed, getQuery, readRequestBody } = require('../lib/serverless-utils.js');
 
 export default async function handler(req, res) {
-  const query = getQuery(req);
-  const action = query.action || '';
-
-  if (action === 'createLead') {
-    return handleCreateLead(req, res);
-  }
-
-  if (req.method !== 'GET') {
-    return methodNotAllowed(res, ['GET', 'POST']);
-  }
-
   try {
+    const host = req?.headers?.host || 'localhost';
+    const url = new URL(req?.url || '/', `http://${host}`);
+    const pathname = url.pathname.replace(/\/+$/, '');
+    const query = getQuery(req);
+    const action = query.action || '';
+
+    if (action === 'createLead' || pathname.endsWith('/create-lead')) {
+      return handleCreateLead(req, res);
+    }
+
+    if (req.method !== 'GET') {
+      return methodNotAllowed(res, ['GET', 'POST']);
+    }
+
     const limit = Math.min(parseInt(query.limit, 10) || 20, 50);
     const leads = await crmService.getRecentLeads(limit);
     return res.status(200).json({ success: true, data: leads });
   } catch (err) {
+    console.error('leads.js error:', err);
     logger.error('Leads route error', { error: err.message });
     return res.status(500).json({ success: false, message: 'Error fetching leads.' });
   }

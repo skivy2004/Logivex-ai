@@ -10,18 +10,27 @@ const logger = require('../utils/logger.js');
 const { methodNotAllowed, readRequestBody, getQuery } = require('../lib/serverless-utils.js');
 
 export default async function handler(req, res) {
-  const query = getQuery(req);
-  const action = query.action || '';
+  try {
+    const host = req?.headers?.host || 'localhost';
+    const url = new URL(req?.url || '/', `http://${host}`);
+    const pathname = url.pathname.replace(/\/+$/, '');
+    const query = getQuery(req);
+    const action = query.action || '';
 
-  if (action === 'extractOrder') {
-    return handleExtractOrder(req, res);
+    if (action === 'extractOrder' || pathname.endsWith('/extract-order')) {
+      return handleExtractOrder(req, res);
+    }
+
+    if (action === 'generateSampleEmail' || pathname.endsWith('/generate-sample-email')) {
+      return handleGenerateSampleEmail(req, res);
+    }
+
+    return res.status(404).json({ success: false, message: 'Email action not found.' });
+  } catch (err) {
+    console.error('email.js error:', err);
+    logger.error('Email handler error', { error: err.message });
+    return res.status(500).json({ success: false, message: 'Internal server error.' });
   }
-
-  if (action === 'generateSampleEmail') {
-    return handleGenerateSampleEmail(req, res);
-  }
-
-  return res.status(404).json({ success: false, message: 'Email action not found.' });
 }
 
 async function handleExtractOrder(req, res) {
