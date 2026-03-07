@@ -4,9 +4,45 @@ const require = createRequire(import.meta.url);
 const { getSupabaseAdmin } = require('../lib/supabaseClient.js');
 const { requireAuthContext } = require('../lib/serverless-auth.js');
 const logger = require('../utils/logger.js');
-const { methodNotAllowed, readRequestBody } = require('../lib/serverless-utils.js');
+const { methodNotAllowed, readRequestBody, getQuery } = require('../lib/serverless-utils.js');
 
 export default async function handler(req, res) {
+  const query = getQuery(req);
+  const action = query.action || '';
+
+  if (action === 'me') {
+    return handleMe(req, res);
+  }
+
+  if (action === 'profile') {
+    return handleProfile(req, res);
+  }
+
+  return res.status(404).json({ success: false, message: 'Account action not found.' });
+}
+
+async function handleMe(req, res) {
+  if (req.method !== 'GET') {
+    return methodNotAllowed(res, ['GET']);
+  }
+
+  const auth = await requireAuthContext(req);
+  if (!auth.ok) {
+    return res.status(auth.status).json(auth.body);
+  }
+
+  return res.status(200).json({
+    success: true,
+    user: {
+      id: auth.userProfile.id,
+      email: auth.userProfile.email,
+      name: auth.userProfile.name,
+      role: auth.userProfile.role || 'user'
+    }
+  });
+}
+
+async function handleProfile(req, res) {
   if (req.method !== 'POST') {
     return methodNotAllowed(res, ['POST']);
   }

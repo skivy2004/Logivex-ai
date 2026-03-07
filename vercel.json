@@ -49,12 +49,60 @@
       "destination": "/automation-intake/index.html"
     },
     {
+      "source": "/api/me",
+      "destination": "/api/account?action=me"
+    },
+    {
+      "source": "/api/profile",
+      "destination": "/api/account?action=profile"
+    },
+    {
+      "source": "/api/contact",
+      "destination": "/api/forms?action=contact"
+    },
+    {
+      "source": "/api/intake",
+      "destination": "/api/forms?action=intake"
+    },
+    {
+      "source": "/api/quote",
+      "destination": "/api/forms?action=quote"
+    },
+    {
+      "source": "/api/create-lead",
+      "destination": "/api/leads?action=createLead"
+    },
+    {
+      "source": "/api/extract-order",
+      "destination": "/api/email?action=extractOrder"
+    },
+    {
+      "source": "/api/generate-sample-email",
+      "destination": "/api/email?action=generateSampleEmail"
+    },
+    {
       "source": "/api/features/:id",
       "destination": "/api/features?id=:id"
     },
     {
+      "source": "/api/routing/optimize",
+      "destination": "/api/routing?action=optimize"
+    },
+    {
+      "source": "/api/routing/evaluate",
+      "destination": "/api/routing?action=evaluate"
+    },
+    {
+      "source": "/api/routing/match-carriers",
+      "destination": "/api/routing?action=matchCarriers"
+    },
+    {
+      "source": "/api/routing/carriers",
+      "destination": "/api/routing?action=carriers"
+    },
+    {
       "source": "/api/routing/carriers/:id",
-      "destination": "/api/routing/carriers?id=:id"
+      "destination": "/api/routing?action=carrier&id=:id"
     }
   ]
 }
