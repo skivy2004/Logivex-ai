@@ -1,53 +1,59 @@
-/**
- * POST /api/create-lead handler.
- * Accepts { message } or { message_text }. Uses ai-lead-extraction and crm-service.
- * Returns created lead with classification; never exposes API keys.
- */
+import { createRequire } from 'node:module';
 
-const aiLeadExtraction = require('../services/ai-lead-extraction');
-const crmService = require('../services/crm-service');
-const { sanitizeEmailText } = require('../utils/validation');
-const logger = require('../utils/logger');
+const require = createRequire(import.meta.url);
+const aiLeadExtraction = require('../services/ai-lead-extraction.js');
+const crmService = require('../services/crm-service.js');
+const { sanitizeEmailText } = require('../utils/validation.js');
+const logger = require('../utils/logger.js');
+const { methodNotAllowed, readRequestBody } = require('../lib/serverless-utils.js');
 
-/**
- * Create lead from request body. Body must have `message` or `message_text`.
- * @param {object} body - req.body
- * @returns {Promise<{ success: boolean, data?: object, error?: string }>}
- */
-async function handleCreateLead(body) {
-  const raw = body && (body.message ?? body.message_text);
-  const sanitized = sanitizeEmailText(raw);
-  if (!sanitized.valid) {
-    return { success: false, error: sanitized.error };
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return methodNotAllowed(res, ['POST']);
   }
-
-  logger.info('Create-lead request', { length: sanitized.value.length });
 
   try {
-    const { success, data: extracted, error } = await aiLeadExtraction.extractAndClassifyLead(sanitized.value);
+    const body = await readRequestBody(req);
+    const raw = body && (body.message ?? body.message_text);
+    const sanitized = sanitizeEmailText(raw);
+    if (!sanitized.valid) {
+      return res.status(400).json({
+        success: false,
+        message: sanitized.error || 'Please provide a message to analyze.'
+      });
+    }
+
+    logger.info('Create-lead request', { length: sanitized.value.length });
+    const { success, data: extracted, error } = await aiLeadExtraction.extractAndClassifyLead(
+      sanitized.value
+    );
+
     if (!success || !extracted) {
-      return { success: false, error: error || 'Failed to extract lead from message.' };
+      return res.status(400).json({
+        success: false,
+        message: error || 'Failed to extract lead from message.'
+      });
     }
 
-    const lead = crmService.addLead(extracted);
+    const lead = await crmService.addLead(extracted);
     if (!lead) {
-      return { success: false, error: 'Failed to save lead to CRM.' };
+      return res.status(400).json({
+        success: false,
+        message: 'Failed to save lead to CRM.'
+      });
     }
 
-    const { _source, ...payload } = lead;
-    return {
+    return res.status(200).json({
       success: true,
       data: {
-        ...payload,
-        _source
+        ...lead
       }
-    };
+    });
   } catch (err) {
-    logger.error('Create-lead failed', { error: err.message });
-    return { success: false, error: err.message };
+    logger.error('Create-lead route error', { error: err.message });
+    return res.status(502).json({
+      success: false,
+      message: 'Error creating lead. Please try again.'
+    });
   }
 }
-
-module.exports = {
-  handleCreateLead
-};

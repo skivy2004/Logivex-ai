@@ -21,9 +21,26 @@ create table if not exists public.features (
   updated_at timestamptz not null default now()
 );
 
+-- CRM demo leads for serverless-safe recent lead history
+create table if not exists public.crm_leads (
+  id text primary key,
+  name text,
+  company text,
+  email text,
+  phone text,
+  industry text,
+  location text,
+  lead_intent text,
+  lead_priority text,
+  lead_classification text not null default 'Cold',
+  source text,
+  created_at timestamptz not null default now()
+);
+
 -- RLS: only service role can manage users and features from the backend.
 alter table public.users enable row level security;
 alter table public.features enable row level security;
+alter table public.crm_leads enable row level security;
 
 -- Allow service role full access (your Express app uses SUPABASE_SERVICE_ROLE_KEY).
 create policy "Service role can do anything on users"
@@ -33,6 +50,11 @@ create policy "Service role can do anything on users"
 
 create policy "Service role can do anything on features"
   on public.features for all
+  using (true)
+  with check (true);
+
+create policy "Service role can do anything on crm_leads"
+  on public.crm_leads for all
   using (true)
   with check (true);
 

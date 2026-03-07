@@ -1,28 +1,29 @@
-/**
- * POST /api/extract-order handler.
- * Accepts { email } or { email_text }. Uses extraction-service and validation.
- * Optionally adds distance_km when both addresses present and Google API key is set.
- */
+import { createRequire } from 'node:module';
 
-const extractionService = require('../services/extraction-service');
-const distanceService = require('../services/distance-service');
-const { sanitizeEmailText } = require('../utils/validation');
-const logger = require('../utils/logger');
+const require = createRequire(import.meta.url);
+const extractionService = require('../services/extraction-service.js');
+const distanceService = require('../services/distance-service.js');
+const { sanitizeEmailText } = require('../utils/validation.js');
+const logger = require('../utils/logger.js');
+const { methodNotAllowed, readRequestBody } = require('../lib/serverless-utils.js');
 
-/**
- * Extract transport order from request body. Body must have `email` or `email_text`.
- * @param {object} body - req.body
- * @returns {Promise<{ success: boolean, data?: object, error?: string }>}
- */
-async function handleExtractOrder(body) {
-  const raw = body && (body.email ?? body.email_text);
-  const sanitized = sanitizeEmailText(raw);
-  if (!sanitized.valid) {
-    return { success: false, error: sanitized.error };
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return methodNotAllowed(res, ['POST']);
   }
 
-  logger.info('Extraction request', { length: sanitized.value.length });
   try {
+    const body = await readRequestBody(req);
+    const raw = body && (body.email ?? body.email_text);
+    const sanitized = sanitizeEmailText(raw);
+    if (!sanitized.valid) {
+      return res.status(400).json({
+        success: false,
+        message: sanitized.error || 'Please provide email text to extract.'
+      });
+    }
+
+    logger.info('Extraction request', { length: sanitized.value.length });
     const result = await extractionService.extractOrder(sanitized.value);
     logger.info('Extraction completed', { source: result.data?._source });
 
@@ -34,16 +35,25 @@ async function handleExtractOrder(body) {
           result.data.delivery_location,
           apiKey
         );
-        if (distanceKm != null) result.data.distance_km = distanceKm;
+        if (distanceKm != null) {
+          result.data.distance_km = distanceKm;
+        }
       }
     }
-    return result;
+
+    if (result.success) {
+      return res.status(200).json({ success: true, data: result.data });
+    }
+
+    return res.status(400).json({
+      success: false,
+      message: result.error || 'Please provide email text to extract.'
+    });
   } catch (err) {
-    logger.error('Extraction failed', { error: err.message });
-    return { success: false, error: err.message };
+    logger.error('Extract-order route error', { error: err.message });
+    return res.status(502).json({
+      success: false,
+      message: 'Error extracting order details. Please try again.'
+    });
   }
 }
-
-module.exports = {
-  handleExtractOrder
-};
