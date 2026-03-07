@@ -1,8 +1,7 @@
-// demos.js
-// Central configuration for all demo experiences exposed via the Demo Hub.
-// Add or adjust demos here; the dashboard will update automatically.
+// data/demo-config.js
+// Demo definitions for the Demo Hub. Used by Express /api/demos and Vercel api/demos.
 
-const demos = [
+module.exports = [
   {
     id: 'transport-quote',
     name: 'Transport Quote Automation',
@@ -44,8 +43,3 @@ const demos = [
     status: 'beta'
   }
 ];
-
-module.exports = {
-  demos
-};
-
