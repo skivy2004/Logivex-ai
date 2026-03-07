@@ -4,21 +4,28 @@ const require = createRequire(import.meta.url);
 const { getSupabaseAdmin } = require('../lib/supabaseClient.js');
 const { requireAuthContext } = require('../lib/serverless-auth.js');
 const logger = require('../utils/logger.js');
-const { methodNotAllowed, readRequestBody, getQuery } = require('../lib/serverless-utils.js');
+const { methodNotAllowed, readRequestBody } = require('../lib/serverless-utils.js');
 
 export default async function handler(req, res) {
-  const query = getQuery(req);
-  const action = query.action || '';
+  try {
+    const host = req?.headers?.host || 'localhost';
+    const url = new URL(req?.url || '/', `http://${host}`);
+    const action = url.searchParams.get('action');
 
-  if (action === 'me') {
-    return handleMe(req, res);
+    if (action === 'me') {
+      return handleMe(req, res);
+    }
+
+    if (action === 'profile') {
+      return handleProfile(req, res);
+    }
+
+    return res.status(400).json({ success: false, message: 'Invalid account action.' });
+  } catch (err) {
+    console.error('account.js error:', err);
+    logger.error('Account handler error', { error: err.message });
+    return res.status(500).json({ success: false, message: 'Internal server error.' });
   }
-
-  if (action === 'profile') {
-    return handleProfile(req, res);
-  }
-
-  return res.status(404).json({ success: false, message: 'Account action not found.' });
 }
 
 async function handleMe(req, res) {
