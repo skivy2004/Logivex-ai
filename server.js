@@ -116,14 +116,20 @@ app.get('/api/demos', async (req, res) => {
 });
 
 app.get('/api/config', (req, res) => {
-  const out = {
-    googleMapsApiKey: config.googleMapsApiKey
-  };
-  if (config.supabaseUrl && config.supabaseAnonKey) {
-    out.supabaseUrl = config.supabaseUrl;
-    out.supabaseAnonKey = config.supabaseAnonKey;
+  const googleMapsApiKey =
+    process.env.GOOGLE_API_KEY || process.env.GOOGLE_MAPS_API_KEY;
+
+  if (!googleMapsApiKey) {
+    return res.status(500).json({
+      error: 'Google Maps API key is not configured',
+    });
   }
-  res.json(out);
+
+  res.json({
+    googleMapsApiKey,
+    supabaseUrl: process.env.SUPABASE_URL,
+    supabaseAnonKey: process.env.SUPABASE_ANON_KEY,
+  });
 });
 
 // --- Auth & profile ---
