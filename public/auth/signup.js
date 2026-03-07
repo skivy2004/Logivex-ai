@@ -18,10 +18,24 @@
     submitBtn.textContent = loading ? 'Creating account…' : 'Sign up';
   }
 
+  function normalizeConfigValue(value) {
+    if (typeof value !== 'string') return '';
+    return value.trim().replace(/^['"]|['"]$/g, '').trim();
+  }
+
   function initSupabaseFromConfig(config) {
-    if (!config || !config.supabaseUrl || !config.supabaseAnonKey) {
+    var supabaseUrl = normalizeConfigValue(config && config.supabaseUrl);
+    var supabaseAnonKey = normalizeConfigValue(config && config.supabaseAnonKey);
+
+    if (!supabaseUrl || !supabaseAnonKey) {
       console.error('Signup config missing Supabase values:', config);
       setMessage('Supabase auth keys are missing from /api/config.', 'error');
+      return;
+    }
+
+    if (!/^https?:\/\//i.test(supabaseUrl)) {
+      console.error('Signup config has invalid Supabase URL:', supabaseUrl);
+      setMessage('Supabase URL is invalid. It must start with https://', 'error');
       return;
     }
 
@@ -37,7 +51,7 @@
       return;
     }
 
-    supabase = createClient(config.supabaseUrl, config.supabaseAnonKey);
+    supabase = createClient(supabaseUrl, supabaseAnonKey);
   }
 
   form.addEventListener('submit', async function (e) {

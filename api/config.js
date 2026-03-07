@@ -4,11 +4,19 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const googleMapsApiKey = process.env.GOOGLE_API_KEY || process.env.GOOGLE_MAPS_API_KEY;
+  function normalizeEnv(value) {
+    if (typeof value !== 'string') return null;
+    const trimmed = value.trim().replace(/^['"]|['"]$/g, '').trim();
+    return trimmed || null;
+  }
+
+  const googleMapsApiKey = normalizeEnv(process.env.GOOGLE_API_KEY || process.env.GOOGLE_MAPS_API_KEY);
+  const supabaseUrl = normalizeEnv(process.env.SUPABASE_URL);
+  const supabaseAnonKey = normalizeEnv(process.env.SUPABASE_ANON_KEY);
 
   return res.status(200).json({
     googleMapsApiKey: googleMapsApiKey || null,
-    supabaseUrl: process.env.SUPABASE_URL,
-    supabaseAnonKey: process.env.SUPABASE_ANON_KEY
+    supabaseUrl,
+    supabaseAnonKey
   });
 };

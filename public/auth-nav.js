@@ -21,14 +21,29 @@
     setLinks('<a href="/login">Log in</a><a href="/signup">Sign up</a>');
   }
 
+  function normalizeConfigValue(value) {
+    if (typeof value !== 'string') return '';
+    return value.trim().replace(/^['"]|['"]$/g, '').trim();
+  }
+
   fetch('/api/config')
     .then(function (r) { return r.json(); })
     .then(function (config) {
-      if (!config.supabaseUrl || !config.supabaseAnonKey || !window.supabase || !window.supabase.createClient) {
+      var supabaseUrl = normalizeConfigValue(config && config.supabaseUrl);
+      var supabaseAnonKey = normalizeConfigValue(config && config.supabaseAnonKey);
+
+      if (!supabaseUrl || !supabaseAnonKey || !window.supabase || !window.supabase.createClient) {
         setLoggedOutLinks();
         return;
       }
-      authClient = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
+
+      if (!/^https?:\/\//i.test(supabaseUrl)) {
+        console.error('Auth nav received invalid Supabase URL:', supabaseUrl);
+        setLoggedOutLinks();
+        return;
+      }
+
+      authClient = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
       authClient.auth.getSession().then(function (_ref) {
         var data = _ref.data;
         var session = data && data.session;
